@@ -4,4 +4,4 @@ print("Hello, World!")
 fastapi_app = FastAPI()
 @fastapi_app.get("/")
 def read_root():
-    return {"Hello": "World"}ls
+    return {"Hello": "World"}

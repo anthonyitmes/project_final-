@@ -20,7 +20,7 @@ class Cliente(Base):
 
     # Relación 1:N con Direccion
     direcciones: Mapped[list["Direccion"]] = relationship("Direccion", back_populates="cliente")
-
+    clientes_servicios: Mapped[list["Cliente_servicio"]] = relationship("Cliente_servicio", back_populates="cliente")
 
 if TYPE_CHECKING:
     from app.models.direcciones import Direccion
