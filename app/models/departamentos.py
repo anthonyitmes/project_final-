@@ -13,11 +13,8 @@ class Departamento(Base):
     # PK: identificador del departamento
     id_departamento: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     # Nombre del departamento (no nulo, hasta 100 caracteres)
-    nombre_departamento: Mapped[str] = mapped_column(String(100), nullable=False)
-    
-    
-    
-    # Relación 1:N con Municipio. 'back_populates' enlaza con 'departamento' en Municipio.
+    nombre_departamento: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+
     municipios: Mapped[list["Municipio"]] = relationship("Municipio", back_populates="departamento")
 
 

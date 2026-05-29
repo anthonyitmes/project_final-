@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
+
 from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 
 
@@ -9,25 +11,29 @@ class Empleado(Base):
 
     __tablename__ = "empleados"
 
-    # PK: identificador del empleado
     id_empleado: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    # Nombre completo del empleado
     nombre_empleado: Mapped[str] = mapped_column(String(100), nullable=False)
-    # Email único del empleado
     email: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
-    # Contraseña hasheada
     password_bash: Mapped[str] = mapped_column(String(255), nullable=False)
-    # Estado activo/inactivo
     activo: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    # FK a roles.id_rol para relacionar el empleado con su rol
     id_rol: Mapped[int] = mapped_column(ForeignKey("roles.id_rol"), nullable=False)
-    # Relación many -> one. 'back_populates' enlaza con 'empleados' en Rol.
     rol: Mapped["Rol"] = relationship("Rol", back_populates="empleados")
+    tickets_receptor: Mapped[list["Ticket"]] = relationship(
+        "Ticket",
+        back_populates="receptor",
+        foreign_keys="[Ticket.id_receptor]",
+    )
+    tickets_tecnico: Mapped[list["Ticket"]] = relationship(
+        "Ticket",
+        back_populates="tecnico",
+        foreign_keys="[Ticket.id_tecnico]",
+    )
 
 
 if TYPE_CHECKING:
     from app.models.roles import Rol
+    from app.models.tickets import Ticket
 
 
 

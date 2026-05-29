@@ -1,9 +1,18 @@
 # app/models/__init__.py
 
-# 1. Primero importas la Base (necesaria para Alembic)
 from app.db import Base
 
-# 2. Luego importas todas tus tablas
-from .tickets import Ticket
-from .empleados import Empleado
+from .canales import Canal
 from .clientes import Cliente
+from .clientes_servicios import ClienteServicio
+from .departamentos import Departamento
+from .direcciones import Direccion
+from .empleados import Empleado
+from .estado_ticket import EstadoTicket
+from .municipios import Municipio
+from .niveles_impacto import NivelImpacto
+from .plantilla_formulario import PlantillaFormulario
+from .roles import Rol
+from .servicios import Servicio
+from .tickets import Ticket
+from .tipos_ticket import TipoTicket
