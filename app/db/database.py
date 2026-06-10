@@ -1,26 +1,32 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = "postgresql+psycopg2://postgres:12345678@localhost:5432/User"
+from app.core.config import settings
+
+
+# La URL de conexión sale de config.py para no dejar credenciales fijas en el código.
+DATABASE_URL = settings.DATABASE_URL
+
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True
-    future=True
+    echo=settings.DEBUG,
+    future=True,
 )
 
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
-    bind=engine
+    bind=engine,
 )
 
 Base = declarative_base()
 
+
 def get_db():
+    # Esta función se usa como dependencia de FastAPI para abrir y cerrar la sesión.
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-        
