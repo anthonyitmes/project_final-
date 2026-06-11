@@ -1,7 +1,14 @@
 from fastapi import FastAPI
-print("Hello, World!")
 
-fastapi_app = FastAPI()
-@fastapi_app.get("/")
+from app.api.routers.ticket_router import router as ticket_router
+
+
+app = FastAPI(title="project_final")
+fastapi_app = app
+
+app.include_router(ticket_router)
+
+
+@app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"message": "API project_final funcionando"}
