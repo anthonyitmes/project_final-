@@ -29,11 +29,13 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+    # Configuración: Le dice a Pydantic que lea automáticamente el archivo .env
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore") 
 
     @property
     def DATABASE_URL(self) -> str:
         """Propiedad computada que ensambla la URL automáticamente"""
         return f"postgresql+psycopg2://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
-# Instancia única para importar en el resto del proyecto
+# Instancia de importación
 settings = Settings()
