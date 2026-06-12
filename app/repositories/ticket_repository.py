@@ -10,7 +10,7 @@ class TicketRepository:
         db.refresh(ticket_db) #recupera el objeto actualizado con el id generado
         return ticket_db
     
-    def get_ticket_by_id(self, db: Session, id_ticket: int) -> Ticket | None:
+    def get_ticket_by_id(self, db: Session, id_ticket: int) -> Ticket | None: 
         #busca un ticket por su id
         return db.query(Ticket).filter(Ticket.id_ticket == id_ticket).first()
     
