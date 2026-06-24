@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from datetime import datetime
 from typing import Any, Dict, Optional
 
@@ -46,3 +47,5 @@ class TicketResponseDTO(BaseModel):
 
     class Config:
         from_attributes = True
+=======
+>>>>>>> 3a1cf6837dd5ebc307a324bb8a6dbd29a6f8492d
