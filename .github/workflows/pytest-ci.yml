@@ -1,0 +1,70 @@
+name: Python Pytest CI Architecture
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-suite:
+    name: Validaciones Pytest sobre Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Extracción del código fuente (Checkout)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instauración del entorno Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Aprovisionamiento del Entorno Virtual (Venv)
+        run: |
+          python -m venv.venv
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+
+      - name: Recuperación de caché del entorno virtual
+        uses: actions/cache@v3
+        id: cache-venv
+        with:
+          path:.venv/
+          key: ${{ runner.os }}-venv-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt', 'pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-${{ matrix.python-version }}-
+
+      - name: Instalación de Dependencias Core
+        if: steps.cache-venv.outputs.cache-hit!= 'true'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install pytest pytest-cov pytest-md-report
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Ejecución de la batería de pruebas Pytest
+        env:
+          REPORT_OUTPUT: md_report.md
+        run: |
+          pytest -v --import-mode=append \
+          --junitxml=pytest-results.xml \
+          --cov=src \
+          --cov-report=xml \
+          --cov-report=term-missing:skip-covered \
+          --md-report --md-report-flavor gfm \
+          --md-report-output $REPORT_OUTPUT tests/
+
+      - name: Publicación del Resumen Visual en GitHub
+        if: always()
+        run: cat md_report.md >> $GITHUB_STEP_SUMMARY
