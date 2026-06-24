@@ -13,7 +13,7 @@
 | Repositories | ⚠️ Solo `ticket_repository` implementado; los demás son stubs |
 | Routers (FastAPI) | ⚠️ Solo `ticket_router` implementado |
 | Auth (JWT) | ❌ Sin implementar |
-| `.env` | ❌ No existe → la app no arranca |
+| `.env` | ✅ Existe — variables básicas configuradas |
 | Exception handlers | ❌ Sin implementar |
 | GraphQL | ❌ Carpeta vacía |
 | Services | ❌ Carpeta vacía |
