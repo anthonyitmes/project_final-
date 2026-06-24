@@ -4,256 +4,234 @@
 
 ---
 
+## 🧠 Conceptos clave (glosario rápido)
+
+| Capa | Carpeta | Responsabilidad | Herramienta |
+|------|---------|----------------|-------------|
+| **Models** | `app/models/` | Estructura de las tablas en la BD (columnas, FK, relaciones) | SQLAlchemy ORM |
+| **Schemas / DTOs** | `app/schemas/` | Forma de los datos que entran/salen por la API (validación y serialización) | Pydantic |
+| **Repositories** | `app/repositories/` | Operaciones CRUD directas contra la BD (INSERT, SELECT, UPDATE, DELETE) | SQLAlchemy Session |
+| **Services** | `app/services/` | Lógica de negocio: orquestación, reglas, transformación DTO ↔ Model | Python puro |
+| **Routers** | `app/api/routers/` | Endpoints HTTP: reciben petición, delegan al service, responden | FastAPI |
+
+### Flujo de datos
+```
+Cliente → Router → Service → Repository → Base de datos
+           ↑         ↑           ↑
+        HTTP      Reglas      SQL
+       (FastAPI)  negocio    (SQLAlchemy)
+```
+
+---
+
 ## 📋 Resumen de estado actual
 
 | Capa | Estado |
 |---|---|
 | Modelos (SQLAlchemy) | ✅ 13/13 completos |
 | Schemas/DTOs (Pydantic) | ✅ Completos |
-| Repositories | ⚠️ Solo `ticket_repository` implementado; los demás son stubs |
-| Routers (FastAPI) | ⚠️ Solo `ticket_router` implementado |
+| Repositories | ⚠️ Solo `ticket_repository` implementado |
+| Services | ⚠️ Solo `ticket_service` implementado |
+| Routers (FastAPI) | ⚠️ Solo `ticket_router` implementado (refactorizado con service) |
 | Auth (JWT) | ❌ Sin implementar |
-| `.env` | ✅ Existe — variables básicas configuradas |
+| `.env` | ✅ Existe — requiere revisar `DB_PASSWORD` |
 | Exception handlers | ❌ Sin implementar |
 | GraphQL | ❌ Carpeta vacía |
-| Services | ❌ Carpeta vacía |
 | Tests | ❌ Sin tests |
 
 ---
 
 ## 🧱 Fase 1 — Arreglar lo que impide arrancar
 
-### 1.1 Crear archivo `.env`
-- [ ] Crear `/.env` en la raíz del proyecto con al menos:
-
-```env
-JWT_SECRET_KEY=dev-secret-key-cambiar-en-produccion
-DEBUG=true
-DB_USER=postgres
-DB_PASSWORD=12345678
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=User
-```
+### 1.1 Revisar archivo `.env`
+- [x] Archivo `.env` creado
+- [ ] Verificar que `DB_PASSWORD` tenga la contraseña correcta de PostgreSQL
+- [ ] Verificar que `DB_NAME` coincida con la BD existente
 
 ### 1.2 Verificar que la app arranca
 - [ ] Ejecutar `uvicorn app.main:app --reload`
+- [ ] Confirmar que imprime `"Conexión correcta a la base de datos"` en consola
 - [ ] Abrir `http://localhost:8000/docs` y confirmar que Swagger carga
 
 ---
 
 ## 🧩 Fase 2 — Implementar Repositories faltantes
 
-Cada repository debe seguir el mismo patrón que `ticket_repository.py` (clase + instancia singleton).
+Cada repository sigue el patrón: clase con métodos CRUD + instancia singleton al final del archivo.
 
-### 2.1 Repositories de catálogos (CRUD simple)
-- [ ] `app/repositories/canal_repository.py` — `CanalRepository` con `get_all`, `get_by_id`, `create`, `update`, `delete`
-- [ ] `app/repositories/estado_ticket_repository.py` — `EstadoTicketRepository`
-- [ ] `app/repositories/tipo_ticket_repository.py` — `TipoTicketRepository`
-- [ ] `app/repositories/nivel_impacto_repository.py` — `NivelImpactoRepository`
-- [ ] `app/repositories/plantilla_formulario.repository.py` — `PlantillaFormularioRepository`
-- [ ] `app/repositories/servicio_repository.py` — `ServicioRepository`
-- [ ] `app/repositories/rol_repository.py` — `RolRepository`
-- [ ] `app/repositories/departamento_repository.py` — `DepartamentoRepository`
-- [ ] `app/repositories/municipio_repository.py` — `MunicipioRepository`
+### 2.1 Repositories de catálogos (CRUD simple: `get_all`, `get_by_id`, `create`, `update`, `delete`)
+- [ ] `app/repositories/canal_repository.py`
+- [ ] `app/repositories/estado_ticket_repository.py`
+- [ ] `app/repositories/tipo_ticket_repository.py`
+- [ ] `app/repositories/nivel_impacto_repository.py`
+- [ ] `app/repositories/plantilla_formulario_repository.py`
+- [ ] `app/repositories/servicio_repository.py`
+- [ ] `app/repositories/rol_repository.py`
+- [ ] `app/repositories/departamento_repository.py`
+- [ ] `app/repositories/municipio_repository.py`
 
 ### 2.2 Repositories de entidades principales (CRUD + queries específicas)
-- [ ] `app/repositories/cliente_repository.py` — `ClienteRepository` con:
-  - `create`, `get_by_id`, `get_by_dpi`, `get_by_email`, `get_all` (paginado), `update`, `delete`
-- [ ] `app/repositories/empleado_repository.py` — `EmpleadoRepository` con:
-  - `create`, `get_by_id`, `get_by_email`, `get_all`, `update`, `delete`
-- [ ] `app/repositories/direccio_repository.py` — `DireccionRepository` con:
-  - `create`, `get_by_id`, `get_by_cliente`, `update`, `delete`
-- [ ] `app/repositories/cliente_servicio_repository.py` — `ClienteServicioRepository` con:
-  - `create`, `get_by_cliente`, `get_by_servicio`, `delete`
+- [ ] `app/repositories/cliente_repository.py` — `get_by_dpi`, `get_by_email`, `get_all` paginado
+- [ ] `app/repositories/empleado_repository.py` — `get_by_email`, `get_all` paginado
+- [ ] `app/repositories/direccion_repository.py` — `get_by_cliente`
+- [ ] `app/repositories/cliente_servicio_repository.py` — `get_by_cliente`, `get_by_servicio`
 
-> **Patrón de ejemplo:**
-> ```python
-> class CanalRepository:
->     def get_all(self, db: Session) -> list[Canal]:
->         return db.query(Canal).all()
-> 
->     def get_by_id(self, db: Session, id_canal: int) -> Canal | None:
->         return db.query(Canal).filter(Canal.id_canal == id_canal).first()
-> 
->     def create(self, db: Session, canal: Canal) -> Canal:
->         db.add(canal)
->         db.commit()
->         db.refresh(canal)
->         return canal
-> 
-> canal_repository = CanalRepository()
-> ```
+### 2.3 Extender `ticket_repository` existente
+- [ ] Agregar `update_ticket(db, id_ticket, datos)` — mover la lógica de `db.commit()` del service al repo
+- [ ] Agregar `delete_ticket(db, id_ticket)` — soft delete
+- [ ] Agregar `get_all(db, skip, limit, filtros)` — listado paginado con filtros
+
+> **Patrón de referencia:** `app/repositories/ticket_repository.py`
 
 ---
 
-## 🌐 Fase 3 — Crear Routers REST
+## 🧠 Fase 3 — Implementar Services
 
-### 3.1 Routers de catálogos
-- [ ] `app/api/routers/canal_router.py` — CRUD de canales (`GET`, `POST`, `PUT`, `DELETE`)
-- [ ] `app/api/routers/estado_ticket_router.py` — CRUD de estados
-- [ ] `app/api/routers/tipo_ticket_router.py` — CRUD de tipos de ticket
-- [ ] `app/api/routers/nivel_impacto_router.py` — CRUD de niveles de impacto
-- [ ] `app/api/routers/plantilla_router.py` — CRUD de plantillas de formulario
-- [ ] `app/api/routers/servicio_router.py` — CRUD de servicios
-- [ ] `app/api/routers/rol_router.py` — CRUD de roles
-- [ ] `app/api/routers/departamento_router.py` — CRUD de departamentos
-- [ ] `app/api/routers/municipio_router.py` — CRUD de municipios
+**Nuevo:** Cada entidad principal tendrá su service que contiene la lógica de negocio. Los routers solo delegan.
 
-### 3.2 Routers de entidades principales
-- [ ] `app/api/routers/cliente_router.py`:
-  - `POST /clientes` — crear cliente
-  - `GET /clientes` — listar con paginación (`skip`/`limit`)
-  - `GET /clientes/{id}` — obtener por ID
-  - `PUT /clientes/{id}` — actualizar
-  - `DELETE /clientes/{id}` — borrado lógico o físico
-  - `POST /clientes/{id}/servicios` — asociar servicio
-  - `GET /clientes/{id}/servicios` — servicios del cliente
-  - `GET /clientes/{id}/direcciones` — direcciones del cliente
-- [ ] `app/api/routers/empleado_router.py`:
-  - `POST /empleados` — crear empleado (con hash de password)
-  - `GET /empleados` — listar
-  - `GET /empleados/{id}` — obtener
-  - `PUT /empleados/{id}` — actualizar
-  - `DELETE /empleados/{id}` — soft delete
-- [ ] `app/api/routers/direccion_router.py`:
-  - `POST /direcciones` — crear dirección
-  - `GET /direcciones/{id}` — obtener
-  - `PUT /direcciones/{id}` — actualizar
-  - `DELETE /direcciones/{id}` — eliminar
+### 3.1 Services de catálogos
+- [ ] `app/services/canal_service.py`
+- [ ] `app/services/estado_ticket_service.py`
+- [ ] `app/services/tipo_ticket_service.py`
+- [ ] `app/services/nivel_impacto_service.py`
+- [ ] `app/services/plantilla_service.py`
+- [ ] `app/services/servicio_service.py`
+- [ ] `app/services/rol_service.py`
+- [ ] `app/services/departamento_service.py`
+- [ ] `app/services/municipio_service.py`
 
-### 3.3 Extender ticket_router existente
-- [ ] Agregar `GET /tickets` — listar todos con paginación y filtros opcionales (`?estado=`, `?tecnico=`, `?skip=`, `?limit=`)
+### 3.2 Services de entidades principales
+- [ ] `app/services/cliente_service.py`
+- [ ] `app/services/empleado_service.py`
+- [ ] `app/services/direccion_service.py`
+- [ ] `app/services/cliente_servicio_service.py`
+
+### 3.3 Service existente — `ticket_service`
+- [x] `app/services/ticket_service.py` — implementado y funcionando
+- [ ] Extender con `delete_ticket`, `list_tickets` (paginado + filtros)
+
+> **Patrón de referencia:** `app/services/ticket_service.py`
+
+---
+
+## 🌐 Fase 4 — Crear Routers REST
+
+Cada router recibe la petición HTTP, llama al service y devuelve la respuesta. **Nunca contiene lógica de negocio ni acceso directo a BD.**
+
+### 4.1 Routers de catálogos
+- [ ] `app/api/routers/canal_router.py`
+- [ ] `app/api/routers/estado_ticket_router.py`
+- [ ] `app/api/routers/tipo_ticket_router.py`
+- [ ] `app/api/routers/nivel_impacto_router.py`
+- [ ] `app/api/routers/plantilla_router.py`
+- [ ] `app/api/routers/servicio_router.py`
+- [ ] `app/api/routers/rol_router.py`
+- [ ] `app/api/routers/departamento_router.py`
+- [ ] `app/api/routers/municipio_router.py`
+
+### 4.2 Routers de entidades principales
+- [ ] `app/api/routers/cliente_router.py`
+- [ ] `app/api/routers/empleado_router.py`
+- [ ] `app/api/routers/direccion_router.py`
+
+### 4.3 Router existente — `ticket_router`
+- [x] `app/api/routers/ticket_router.py` — refactorizado con service
+- [ ] Agregar `GET /tickets` — listado paginado con filtros (`?estado=`, `?tecnico=`, `?skip=`, `?limit=`)
 - [ ] Agregar `DELETE /tickets/{id}` — soft delete
-- [ ] Mover `db.commit()` del router al repository (crear método `update_ticket` en `ticket_repository`)
 
-### 3.4 Registrar todos los routers en `main.py`
+### 4.4 Registrar todos los routers en `main.py`
 - [ ] Importar y registrar cada router con `app.include_router()`
 
+> **Patrón de referencia:** `app/api/routers/ticket_router.py`
+
 ---
 
-## 🔐 Fase 4 — Autenticación JWT
+## 🔐 Fase 5 — Autenticación JWT
 
-### 4.1 Crear utilidades de seguridad
+### 5.1 Crear utilidades de seguridad
 - [ ] `app/core/security.py`:
-  - `hash_password(password: str) -> str` (usando `passlib` o `bcrypt`)
+  - `hash_password(password: str) -> str` (bcrypt / passlib)
   - `verify_password(plain: str, hashed: str) -> bool`
-  - `create_access_token(data: dict) -> str` (usando `python-jose`)
+  - `create_access_token(data: dict) -> str` (python-jose)
   - `decode_access_token(token: str) -> dict`
 
-### 4.2 Crear dependencia de auth
+### 5.2 Crear dependencia de auth
 - [ ] `app/api/dependencies.py`:
   - `get_current_user(token: str = Depends(oauth2_scheme)) -> Empleado`
-  - Validar token JWT, extraer `sub` (email), buscar empleado en BD
-  - Lanzar `HTTPException 401` si no es válido
+  - Lanzar `HTTPException 401` si el token no es válido
 
-### 4.3 Crear router de autenticación
+### 5.3 Crear router de autenticación
 - [ ] `app/api/routers/auth_router.py`:
-  - `POST /auth/login` — recibe `LoginRequestDTO`, valida credenciales, devuelve `TokenResponseDTO`
-  - `GET /auth/me` — devuelve info del usuario autenticado (protegido)
+  - `POST /auth/login` → recibe credenciales, devuelve JWT
+  - `GET /auth/me` → devuelve info del usuario autenticado
 
-### 4.4 Proteger endpoints
-- [ ] Agregar `current_user: Empleado = Depends(get_current_user)` a los endpoints que deban estar protegidos
-- [ ] Opcional: crear dependencia `require_role(role_name)` para autorización por rol
-
----
-
-## 🛡️ Fase 5 — Manejo de errores global
-
-### 5.1 Exception handlers en `main.py`
-- [ ] Handler para `SQLAlchemyError` / `IntegrityError` → 409 Conflict
-- [ ] Handler para `ValidationError` de Pydantic → 422 (FastAPI ya lo maneja, pero se puede personalizar)
-- [ ] Handler genérico `Exception` → 500 con mensaje genérico (sin leak de detalles internos)
-- [ ] Handler para `HTTPException` → mantener comportamiento default
-
-> ```python
-> from sqlalchemy.exc import IntegrityError
-> 
-> @app.exception_handler(IntegrityError)
-> def integrity_error_handler(request, exc):
->     raise HTTPException(status_code=409, detail="Conflicto: el recurso ya existe o viola una restricción")
-> ```
+### 5.4 Proteger endpoints
+- [ ] Agregar `Depends(get_current_user)` a endpoints que requieran autenticación
 
 ---
 
-## 📄 Fase 6 — Paginación
+## 🛡️ Fase 6 — Manejo de errores global
 
-### 6.1 Crear schema de paginación genérico
-- [ ] `app/schemas/common.py`:
-  - `class PaginatedResponse(BaseModel)` con `items`, `total`, `skip`, `limit`
+- [ ] Handler para `IntegrityError` → 409 Conflict
+- [ ] Handler genérico `Exception` → 500 (sin leak de detalles internos)
+- [ ] Handler personalizado para errores de negocio (opcional)
+
+---
+
+## 📄 Fase 7 — Paginación genérica
+
+- [ ] `app/schemas/common.py` → `PaginatedResponse[T]` con `items`, `total`, `skip`, `limit`
 - [ ] Usarlo en todos los endpoints GET de lista
-
----
-
-## 🧪 Fase 7 — Tests
-
-### 7.1 Setup
-- [ ] Instalar `pytest`, `httpx`, `pytest-asyncio`
-- [ ] Crear `tests/` con `__init__.py` y `conftest.py`
-- [ ] En `conftest.py`: fixture `TestClient` + base de datos de prueba (SQLite en memoria o PostgreSQL de test)
-
-### 7.2 Tests mínimos por módulo
-- [ ] `tests/test_ticket_router.py` — crear, leer, actualizar ticket
-- [ ] `tests/test_cliente_router.py` — CRUD cliente
-- [ ] `tests/test_auth.py` — login exitoso, login fallido, token inválido
 
 ---
 
 ## 🗃️ Fase 8 — Base de datos (migraciones + seed)
 
 ### 8.1 Migraciones con Alembic
-- [ ] Instalar `alembic`
-- [ ] `alembic init alembic`
-- [ ] Configurar `alembic.ini` y `alembic/env.py` para usar `Base.metadata`
-- [ ] Generar migración inicial: `alembic revision --autogenerate -m "initial"`
-- [ ] Aplicar: `alembic upgrade head`
+- [ ] Instalar `alembic` e inicializar
+- [ ] Configurar `alembic/env.py` para usar `Base.metadata`
+- [ ] Generar migración inicial y aplicar
 
 ### 8.2 Datos semilla (seed)
-- [ ] `app/db/seed.py` — script para insertar datos iniciales:
-  - Roles (admin, técnico, recepcionista)
-  - Estados de ticket (abierto, en progreso, resuelto, cerrado)
-  - Canales (teléfono, web, presencial)
-  - Niveles de impacto (bajo, medio, alto, crítico)
-  - Tipos de ticket (consulta, incidente, solicitud)
-  - Usuario admin por defecto
+- [ ] `app/db/seed.py` — insertar datos iniciales (roles, estados, canales, niveles, tipos, admin)
 - [ ] Ejecutar con: `python -m app.db.seed`
 
 ---
 
-## 🧠 Fase 9 — GraphQL (opcional, futuro)
+## 🧪 Fase 9 — Tests
 
-- [ ] Usar **Strawberry** o **Ariadne** (recomendado Strawberry por tipado nativo)
-- [ ] Crear `app/graphql/schema.py` con tipos y queries
+- [ ] Instalar `pytest`, `httpx`
+- [ ] Crear `tests/conftest.py` con `TestClient` + BD de prueba
+- [ ] Tests mínimos: tickets, clientes, auth
+
+---
+
+## 🧠 Fase 10 — GraphQL (opcional)
+
+- [ ] Implementar con Strawberry
 - [ ] Montar en FastAPI con `GraphQLRouter`
 
 ---
 
-## 📦 Fase 10 — Docker + despliegue
+## 📦 Fase 11 — Docker + despliegue
 
-- [ ] Crear `Dockerfile` para la app FastAPI
-- [ ] Crear `docker-compose.yml` con servicios: `app` + `postgres`
-- [ ] Verificar que `uvicorn` corre dentro del contenedor
+- [ ] Crear `Dockerfile`
+- [ ] Crear `docker-compose.yml` (app + postgres)
 
 ---
 
-## ✅ Checklist rápido (orden de ejecución)
+## ✅ Orden de ejecución recomendado
 
-1. [ ] Crear `.env`
-2. [ ] Verificar que arranca
-3. [ ] Implementar todos los repositories stub
-4. [ ] Crear routers de catálogos
-5. [ ] Crear router de clientes
-6. [ ] Crear router de empleados
-7. [ ] Crear router de direcciones
-8. [ ] Extender ticket_router (paginación, delete)
-9. [ ] Registrar routers en `main.py`
-10. [ ] Implementar `security.py` (hash + JWT)
-11. [ ] Crear `auth_router.py`
-12. [ ] Crear dependencia `get_current_user`
-13. [ ] Proteger endpoints
-14. [ ] Exception handlers globales
-15. [ ] Paginación genérica
-16. [ ] Alembic setup + migración inicial
-17. [ ] Seed script
-18. [ ] Tests básicos
-19. [ ] Docker + docker-compose
+1. [ ] Revisar `.env` y verificar que arranca
+2. [ ] Implementar todos los repositories (Fase 2)
+3. [ ] Implementar todos los services (Fase 3)
+4. [ ] Crear routers de catálogos + registrar en `main.py` (Fase 4.1 + 4.4)
+5. [ ] Crear routers de entidades principales (Fase 4.2)
+6. [ ] Extender `ticket_router` con paginación y delete (Fase 4.3)
+7. [ ] Implementar autenticación JWT (Fase 5)
+8. [ ] Exception handlers (Fase 6)
+9. [ ] Paginación genérica (Fase 7)
+10. [ ] Alembic + seed (Fase 8)
+11. [ ] Tests (Fase 9)
+12. [ ] GraphQL (opcional — Fase 10)
+13. [ ] Docker (Fase 11)
