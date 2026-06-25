@@ -13,14 +13,6 @@ from app.schemas.ticket_dto import TicketCreateDTO, TicketResponseDTO, TicketUpd
 router = APIRouter(prefix="/tickets", tags=["Tickets"])
 
 
-def _build_datos_respuesta(ticket_in: TicketCreateDTO) -> dict:
-    return {
-        "titulo": ticket_in.titulo,
-        "descripcion": ticket_in.descripcion,
-        "respuestas_extra": ticket_in.respuestas_extra or {},
-    }
-
-
 def _build_ticket_entity(
     ticket_in: TicketCreateDTO,
     id_receptor: int,
@@ -38,7 +30,9 @@ def _build_ticket_entity(
         id_tipo_ticket=ticket_in.id_tipo_ticket,
         id_impacto=ticket_in.id_impacto,
         id_plantilla=ticket_in.id_plantilla,
-        datos_respuesta=_build_datos_respuesta(ticket_in),
+        titulo=ticket_in.titulo,
+        descripcion=ticket_in.descripcion,
+        datos_respuesta=ticket_in.respuestas_extra or {},
     )
 
 
@@ -87,9 +81,9 @@ def update_ticket(
         ticket.id_impacto = ticket_update.id_impacto
 
     if ticket_update.titulo is not None:
-        ticket.datos_respuesta = {**ticket.datos_respuesta, "titulo": ticket_update.titulo}
+        ticket.titulo = ticket_update.titulo
     if ticket_update.descripcion is not None:
-        ticket.datos_respuesta = {**ticket.datos_respuesta, "descripcion": ticket_update.descripcion}
+        ticket.descripcion = ticket_update.descripcion
 
     db.commit()
     db.refresh(ticket)
