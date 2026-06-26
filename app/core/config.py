@@ -29,6 +29,8 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+    # Configuración: Le dice a Pydantic que lea automáticamente el archivo .env
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore") 
 
     @property
     def DATABASE_URL(self) -> str:
