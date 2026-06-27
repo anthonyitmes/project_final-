@@ -1,15 +1,3 @@
-"""
-Ticket Service — Capa de lógica de negocio para Tickets.
-
-Responsabilidad:
-- Reglas de negocio (generación de código TK-..., validaciones).
-- Orquestación: llama al Repository para persistencia.
-- Transformación DTO ↔ Modelo ORM.
-- NO toca la sesión de BD directamente (eso es tarea del Repository).
-
-Flujo: Router → Service → Repository → Base de datos
-"""
-
 from datetime import datetime, timezone
 from secrets import token_hex
 
@@ -67,13 +55,13 @@ class TicketService:
         tickets = ticket_repository.get_tickets_by_cliente(db, id_cliente)
         return [TicketResponseDTO.model_validate(ticket) for ticket in tickets]
 
-    def update_ticket(  # CORREGIDO: delega al repo, no usa db.commit()
+    def update_ticket(  
         self,
         db: Session,
         id_ticket: int,
         ticket_update: TicketUpdateDTO,
     ) -> TicketResponseDTO | None:
-        """Actualiza campos delegando al repo. NO usa db.commit()."""
+
         datos = ticket_update.model_dump(exclude_unset=True)
         if not datos:
             ticket = ticket_repository.get_ticket_by_id(db, id_ticket)
@@ -85,13 +73,9 @@ class TicketService:
             return None
         return TicketResponseDTO.model_validate(ticket_actualizado)
 
-    # -- DELETE ----------------------------------------------------------
 
     def delete_ticket(self, db: Session, id_ticket: int) -> bool:
-        """Elimina un ticket. Retorna True si tuvo exito, False si no existe.
-
-        TODO (Fase 4.3): considerar soft-delete con campo 'activo'.
-        """
+        
         return ticket_repository.delete_ticket(db, id_ticket)  # fixed
 
 
