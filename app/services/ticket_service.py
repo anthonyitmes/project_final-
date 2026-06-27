@@ -118,26 +118,6 @@ class TicketService:
         ]
 
 
-    ### DELETED -- TEMP WRAPPER BELOW
-    def _dummy(self):
-        if ticket is None:
-            return None
-
-        if ticket_update.id_estado is not None:
-            ticket.id_estado = ticket_update.id_estado
-        if ticket_update.id_tecnico is not None:
-            ticket.id_tecnico = ticket_update.id_tecnico
-        if ticket_update.id_impacto is not None:
-            ticket.id_impacto = ticket_update.id_impacto
-
-        if ticket_update.titulo is not None:
-            ticket.titulo = ticket_update.titulo
-        if ticket_update.descripcion is not None:
-            ticket.descripcion = ticket_update.descripcion
-
-        # db.commit() removed
-        pass
-        return TicketResponseDTO.model_validate(ticket)
-
+  
 
 ticket_service = TicketService()
