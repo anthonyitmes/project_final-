@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel, Field
 
 
-class TicketCreateDTO(BaseModel):
+class echTicketCreateDTO(BaseModel):
     id_cliente: int
     id_canal: int
     id_tipo_ticket: int
