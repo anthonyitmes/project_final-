@@ -1,3 +1,10 @@
+"""
+Ticket Router — Endpoints HTTP para la entidad Ticket.
+
+Flujo: Cliente -> Router -> Service -> Repository -> BD
+El router solo maneja HTTP: recibe requests, delega al Service, responde.
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
@@ -43,3 +50,39 @@ def update_ticket(
     if ticket is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket no encontrado")
     return ticket
+
+
+# GET /tickets — Listado paginado con filtros (Fase 4.3)
+@router.get("", response_model=list[TicketResponseDTO])
+def get_all_tickets(
+    skip: int = Query(0, ge=0, description="Registros a saltar"),
+    limit: int = Query(50, ge=1, le=100, description="Maximo de registros"),
+    id_estado: int | None = Query(None, description="Filtrar por ID de estado"),
+    id_tecnico: int | None = Query(None, description="Filtrar por ID de tecnico"),
+    id_cliente: int | None = Query(None, description="Filtrar por ID de cliente"),
+    db: Session = Depends(get_db),
+) -> list[TicketResponseDTO]:
+    """Lista tickets con paginacion y filtros opcionales."""
+    return ticket_service.get_all_tickets(
+        db,
+        skip=skip,
+        limit=limit,
+        id_estado=id_estado,
+        id_tecnico=id_tecnico,
+        id_cliente=id_cliente,
+    )
+
+
+# DELETE /tickets/{id_ticket} — Eliminar un ticket (Fase 4.3)
+@router.delete("/{id_ticket}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_ticket(
+    id_ticket: int,
+    db: Session = Depends(get_db),
+) -> None:
+    """Elimina un ticket. Retorna 204 si se elimino, 404 si no existe."""
+    eliminado = ticket_service.delete_ticket(db, id_ticket)
+    if not eliminado:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Ticket no encontrado",
+        )

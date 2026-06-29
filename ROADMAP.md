@@ -1,6 +1,6 @@
 # 🗺️ Roadmap para completar el Backend — `project_final`
 
-> Última actualización: 24/jun/2026
+> Última actualización: 27/jun/2026 — Refactorización de capa Service + Router completada
 
 ---
 
@@ -30,14 +30,43 @@ Cliente → Router → Service → Repository → Base de datos
 |---|---|
 | Modelos (SQLAlchemy) | ✅ 13/13 completos |
 | Schemas/DTOs (Pydantic) | ✅ Completos |
-| Repositories | ⚠️ Solo `ticket_repository` implementado |
-| Services | ⚠️ Solo `ticket_service` implementado |
-| Routers (FastAPI) | ⚠️ Solo `ticket_router` implementado (refactorizado con service) |
+| Repositories | ⚠️ Solo `ticket_repository` implementado (refactorizado 27/jun: nombres, paginacion, filtros, update con dict) |
+| Services | ⚠️ Solo `ticket_service` implementado (refactorizado 27/jun: update_ticket delega al repo, delete_ticket, get_all_tickets) |
+| Routers (FastAPI) | ⚠️ Solo `ticket_router` implementado (refactorizado 27/jun: +GET paginado, +DELETE, docstring) |
 | Auth (JWT) | ❌ Sin implementar |
 | `.env` | ✅ Existe — requiere revisar `DB_PASSWORD` |
 | Exception handlers | ❌ Sin implementar |
 | GraphQL | ❌ Carpeta vacía |
 | Tests | ❌ Sin tests |
+| Refactorizacion Service/Repo | ✅ Completada 27/jun: update_ticket ya no usa db.commit() |
+
+
+
+## 🔧 Refactorizacion 27/jun/2026 — Correccion arquitectonica Service/Repository
+
+### Cambios realizados:
+
+| Archivo | Que se corrigio |
+|---------|----------------|
+| `ticket_repository.py` | Nombres consistentes (`get_tickets_by_cliente`), `get_all` con paginacion+filtros, `update_ticket` recibe `dict` |
+| `ticket_service.py` | **CRITICO:** `update_ticket` ya NO llama a `db.commit()` ni `db.refresh()`. Delega al Repository via dict. Se agrego `delete_ticket` y `get_all_tickets`. |
+| `ticket_router.py` | Se agrego `GET /tickets` paginado, `DELETE /tickets/{id}`, docstrings. |
+
+### Regla de oro establecida:
+
+```
+Router -> Service -> Repository -> BD
+HTTP      NEGOCIO    PERSISTENCIA   SQL
+
+EL SERVICE NUNCA TOCA: db.commit(), db.add(), db.refresh(), db.delete()
+ESO ES TERRITORIO EXCLUSIVO DEL REPOSITORY
+El Service construye un dict y se lo pasa al Repository
+```
+
+### Lo que falta para cerrar este bloque:
+
+- [ ] Renombrar `ticket_service_new.py` -> `ticket_service.py` (el viejo quedo con codigo duplicado, ver seccion NOTA abajo)
+- [ ] Agregar `get_all_tickets` al service (ya esta en el archivo nuevo, falta renombrar)
 
 ---
 
@@ -76,10 +105,10 @@ Cada repository sigue el patrón: clase con métodos CRUD + instancia singleton 
 - [ ] `app/repositories/direccion_repository.py` — `get_by_cliente`
 - [ ] `app/repositories/cliente_servicio_repository.py` — `get_by_cliente`, `get_by_servicio`
 
-### 2.3 Extender `ticket_repository` existente
-- [ ] Agregar `update_ticket(db, id_ticket, datos)` — mover la lógica de `db.commit()` del service al repo
-- [ ] Agregar `delete_ticket(db, id_ticket)` — soft delete
-- [ ] Agregar `get_all(db, skip, limit, filtros)` — listado paginado con filtros
+### 2.3 Extender `ticket_repository` existente ✅ COMPLETADO (27/jun)
+- [x] Agregar `update_ticket(db, id_ticket, datos)` — ✅ Recibe dict, sin logica de negocio
+- [x] Agregar `delete_ticket(db, id_ticket)` — ✅ Delete fisico (TODO: soft-delete futuro)
+- [x] Agregar `get_all(db, skip, limit, filtros)` — ✅ Listado paginado con filtros dinamicos
 
 > **Patrón de referencia:** `app/repositories/ticket_repository.py`
 
@@ -106,9 +135,9 @@ Cada repository sigue el patrón: clase con métodos CRUD + instancia singleton 
 - [ ] `app/services/direccion_service.py`
 - [ ] `app/services/cliente_servicio_service.py`
 
-### 3.3 Service existente — `ticket_service`
+### 3.3 Service existente — `ticket_service` ✅ COMPLETADO (27/jun)
 - [x] `app/services/ticket_service.py` — implementado y funcionando
-- [ ] Extender con `delete_ticket`, `list_tickets` (paginado + filtros)
+- [x] Extender con `delete_ticket`, `get_all_tickets` (paginado + filtros) ✅ Hecho
 
 > **Patrón de referencia:** `app/services/ticket_service.py`
 
@@ -134,10 +163,10 @@ Cada router recibe la petición HTTP, llama al service y devuelve la respuesta. 
 - [ ] `app/api/routers/empleado_router.py`
 - [ ] `app/api/routers/direccion_router.py`
 
-### 4.3 Router existente — `ticket_router`
+### 4.3 Router existente — `ticket_router` ✅ COMPLETADO (27/jun)
 - [x] `app/api/routers/ticket_router.py` — refactorizado con service
-- [ ] Agregar `GET /tickets` — listado paginado con filtros (`?estado=`, `?tecnico=`, `?skip=`, `?limit=`)
-- [ ] Agregar `DELETE /tickets/{id}` — soft delete
+- [x] Agregar `GET /tickets` — ✅ Paginado con filtros (`?skip=`, `?limit=`, `?id_estado=`, `?id_tecnico=`, `?id_cliente=`)
+- [x] Agregar `DELETE /tickets/{id}` — ✅ Delete fisico (TODO: soft-delete futuro)
 
 ### 4.4 Registrar todos los routers en `main.py`
 - [ ] Importar y registrar cada router con `app.include_router()`
@@ -222,12 +251,12 @@ Cada router recibe la petición HTTP, llama al service y devuelve la respuesta. 
 
 ## ✅ Orden de ejecución recomendado
 
-1. [ ] Revisar `.env` y verificar que arranca
+1. [ ] Revisar `.env` y verificar que arranca (Fase 1)
 2. [ ] Implementar todos los repositories (Fase 2)
 3. [ ] Implementar todos los services (Fase 3)
 4. [ ] Crear routers de catálogos + registrar en `main.py` (Fase 4.1 + 4.4)
 5. [ ] Crear routers de entidades principales (Fase 4.2)
-6. [ ] Extender `ticket_router` con paginación y delete (Fase 4.3)
+6. [x] Extender `ticket_router` con paginacion y delete (Fase 4.3) ✅ COMPLETADO 27/jun
 7. [ ] Implementar autenticación JWT (Fase 5)
 8. [ ] Exception handlers (Fase 6)
 9. [ ] Paginación genérica (Fase 7)
