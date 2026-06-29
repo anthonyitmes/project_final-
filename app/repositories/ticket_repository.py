@@ -68,6 +68,5 @@ class TicketRepository:
         db.commit()
         return True
 
-# Instancia singleton — usada por el Service.
-# TODO: migrar a inyección de dependencias (Depends) para facilitar testing.
+
 ticket_repository = TicketRepository()
