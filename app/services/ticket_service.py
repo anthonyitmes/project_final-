@@ -75,8 +75,21 @@ class TicketService:
 
 
     def delete_ticket(self, db: Session, id_ticket: int) -> bool:
-        
-        return ticket_repository.delete_ticket(db, id_ticket)  # fixed
+        """Elimina un ticket de la base de datos.
+
+        Parameters
+        ----------
+        db : Session
+            Sesión activa de SQLAlchemy.
+        id_ticket : int
+            ID del ticket a eliminar.
+
+        Returns
+        -------
+        bool
+            True si se eliminó correctamente; False si el ticket no existía.
+        """
+        return ticket_repository.delete_ticket(db, id_ticket)
 
 
     def get_all_tickets(
