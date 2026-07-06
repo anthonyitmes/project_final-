@@ -1,6 +1,6 @@
 # 🗺️ Roadmap para completar el Backend — `project_final`
 
-> Última actualización: 30/jun/2026 — Corrección de inconsistencias en Repositories + Services
+> Última actualización: 05/jul/2026 — Verificación de services, corrección de estado
 
 ---
 
@@ -35,17 +35,17 @@ El Repository NUNCA recibe DTOs — solo dicts o entidades ORM
 
 ---
 
-## 📋 Resumen de estado actual
+## 📋 Resumen de estado actual (05/jul/2026)
 
 | Capa | Estado |
 |---|---|
-| Modelos (SQLAlchemy) | ✅ 13/13 completos |
-| Schemas/DTOs (Pydantic) | ✅ Completos |
-| Repositories | ⚠️ 14 archivos existen — algunos con bugs (update con vars()/DTOs, falta delete) |
-| Services | ⚠️ Solo 2/14 implementados: `ticket_service` + `canal_service` |
+| Modelos (SQLAlchemy) | ✅ 14/14 completos |
+| Schemas/DTOs (Pydantic) | ✅ Completos (15 archivos — `auth_dto.py` no requiere service propio) |
+| Repositories | ✅ 15/15 archivos existen — pendiente auditar calidad de `update()` y `delete()` |
+| Services | ⚠️ 11/14 implementados — faltan 3 |
 | Routers (FastAPI) | ⚠️ Solo 1/14 implementado: `ticket_router` |
 | `main.py` | ⚠️ Solo registra `ticket_router` |
-| Auth (JWT) | ❌ Sin implementar |
+| Auth (JWT) | ❌ Sin implementar — `auth_dto.py` se usará en Fase 5 directamente en el router |
 | `.env` | ✅ Existe — requiere revisar `DB_PASSWORD` |
 | Exception handlers | ❌ Sin implementar |
 | GraphQL | ❌ Carpeta vacía |
@@ -70,22 +70,6 @@ la regla de que el Repository no debe conocer Schemas.
 | `canal_service.py` | `update_canal()`: ahora hace `model_dump(exclude_unset=True)` y pasa `dict` al repo |
 | `ticket_service.py` | Eliminado comentario residual `# fixed`; agregado docstring a `delete_ticket()` |
 | `cliente_repository.py` | `update_cliente()`: ahora recibe `dict` en vez de entidad `Cliente` (estandarizado) |
-
-### Repositorios que AÚN necesitan esta misma corrección:
-
-| Archivo | Problema | Falta |
-|---------|----------|-------|
-| `rol_repository.py` | `update_rol()` usa `vars()` | Migrar a `dict`, agregar `delete_rol()` |
-| `departamento_repository.py` | `update_departamento()` usa `vars()` | Migrar a `dict`, agregar `delete_departamento()` |
-| `estado_ticket_repository.py` | `update_estado_ticket()` recibe un DTO | Migrar a `dict` |
-| `empleado_repository.py` | Faltan métodos `update` y `delete` | Agregar `update_empleado(dict)` y `delete_empleado()` |
-| `municipio_repository.py` | No revisado | Revisar y estandarizar |
-| `servicio_repository.py` | No revisado | Revisar y estandarizar |
-| `direccio_repository.py` | No revisado | Revisar y estandarizar |
-| `nivel_impacto_repository.py` | No revisado | Revisar y estandarizar |
-| `plantilla_formulario.repository.py` | No revisado | Revisar y estandarizar |
-| `tipo_ticket_repository.py` | No revisado | Revisar y estandarizar |
-| `cliente_servicio_repository.py` | No revisado | Revisar y estandarizar |
 
 ---
 
@@ -126,34 +110,40 @@ la regla de que el Repository no debe conocer Schemas.
 
 ---
 
-## 🧠 Fase 3 — Implementar Services
+## 🧠 Fase 3 — Completar Services
 
-**Objetivo:** Crear 12 services nuevos. Cada uno sigue el patrón canónico de `canal_service.py`.
+### 3.1 Services YA implementados (11/14)
 
-### 3.1 Services de catálogos (CRUD simple)
-
-- [ ] `app/services/estado_ticket_service.py`
-- [ ] `app/services/tipo_ticket_service.py`
-- [ ] `app/services/nivel_impacto_service.py`
-- [ ] `app/services/plantilla_service.py`
-- [ ] `app/services/servicio_service.py`
-- [ ] `app/services/rol_service.py`
-- [ ] `app/services/departamento_service.py`
-- [ ] `app/services/municipio_service.py`
-
-### 3.2 Services de entidades principales
-
-- [ ] `app/services/cliente_service.py`
-- [ ] `app/services/empleado_service.py`
-- [ ] `app/services/direccion_service.py`
-- [ ] `app/services/cliente_servicio_service.py`
-
-### 3.3 Services ya implementados
-
-- [x] `app/services/ticket_service.py` — Completo (refactorizado 27/jun, corregido 30/jun)
 - [x] `app/services/canal_service.py` — Completo (corregido 30/jun)
+- [x] `app/services/cliente_service.py` — Implementado
+- [x] `app/services/cliente_servicio_service.py` — Implementado
+- [x] `app/services/departament_service.py` — Implementado (⚠️ typo: renombrar a `departamento_service.py`)
+- [x] `app/services/direccion_service.py` — Implementado (⚠️ extensión `.PY` mayúscula, renombrar a `.py`)
+- [x] `app/services/empleado_service.py` — Implementado
+- [x] `app/services/estado_ticket_service.py` — Implementado
+- [x] `app/services/municipio_service.py` — Implementado
+- [x] `app/services/nivel_impacto_service.py` — Implementado
+- [x] `app/services/rol_service.py` — Implementado
+- [x] `app/services/ticket_service.py` — Completo (refactorizado 27/jun, corregido 30/jun)
+
+### 3.2 Services FALTANTES (3)
+
+- [ ] `app/services/servicio_service.py` → Model: `servicios.py`, Repo: `servicio_repository.py`, DTO: `servicio_dto.py`
+- [ ] `app/services/plantilla_service.py` → Model: `plantilla_formulario.py`, Repo: `plantilla_formulario.repository.py`, DTO: `plantilla_formulario_dto.py`
+- [ ] `app/services/tipo_ticket_service.py` → Model: `tipos_ticket.py`, Repo: `tipo_ticket_repository.py`, DTO: `tipo_ticket_dto.py`
 
 > **Patrón de referencia:** `app/services/canal_service.py`
+
+### 3.3 ¿Por qué `auth_dto.py` NO necesita service?
+
+`auth_dto.py` contiene DTOs de transporte para autenticación JWT:
+- `LoginRequestDTO` → email + password (entrada)
+- `TokenResponseDTO` → access_token + token_type (salida)
+
+Estos DTOs se usarán **directamente en el router de autenticación** (`auth_router.py`)
+en la Fase 5. No representan una entidad de base de datos, no tienen repository,
+y la lógica de autenticación (hash, verify, JWT) vive en `app/core/security.py`,
+no en un service CRUD tradicional.
 
 ---
 
@@ -194,6 +184,8 @@ Cada router recibe la petición HTTP, llama al service y devuelve la respuesta.
 
 ## 🔐 Fase 5 — Autenticación JWT
 
+> **Nota:** El DTO `auth_dto.py` ya existe. Se usará directamente aquí, sin service intermedio.
+
 ### 5.1 Crear utilidades de seguridad
 - [ ] `app/core/security.py`:
   - `hash_password(password: str) -> str` (bcrypt / passlib)
@@ -208,7 +200,7 @@ Cada router recibe la petición HTTP, llama al service y devuelve la respuesta.
 
 ### 5.3 Crear router de autenticación
 - [ ] `app/api/routers/auth_router.py`:
-  - `POST /auth/login` → recibe credenciales, devuelve JWT
+  - `POST /auth/login` → recibe `LoginRequestDTO`, devuelve `TokenResponseDTO`
   - `GET /auth/me` → devuelve info del usuario autenticado
 
 ### 5.4 Proteger endpoints
@@ -266,17 +258,18 @@ Cada router recibe la petición HTTP, llama al service y devuelve la respuesta.
 
 ---
 
-## ✅ Orden de ejecución recomendado (ACTUALIZADO)
+## ✅ Orden de ejecución recomendado (ACTUALIZADO 05/jul/2026)
 
 1. [ ] Revisar `.env` y verificar que arranca (Fase 1)
-2. [ ] **PRIORITARIO:** Corregir los 4 repos con bugs conocidos (Fase 2.1)
-3. [ ] Revisar y estandarizar los 7 repos no auditados (Fase 2.2)
-4. [ ] Implementar todos los services (Fase 3)
-5. [ ] Crear todos los routers + registrar en `main.py` (Fase 4)
-6. [ ] Implementar autenticación JWT (Fase 5)
-7. [ ] Exception handlers (Fase 6)
-8. [ ] Paginación genérica (Fase 7)
-9. [ ] Alembic + seed (Fase 8)
-10. [ ] Tests (Fase 9)
-11. [ ] GraphQL (opcional — Fase 10)
-12. [ ] Docker (Fase 11)
+2. [ ] Corregir typos: renombrar `departament_service.py` → `departamento_service.py`, `direccion_service.PY` → `direccion_service.py`
+3. [ ] **PRIORITARIO:** Crear los 3 services faltantes: `servicio_service.py`, `plantilla_service.py`, `tipo_ticket_service.py` (Fase 3.2)
+4. [ ] Corregir los repos con bugs conocidos (Fase 2.1)
+5. [ ] Revisar y estandarizar los repos no auditados (Fase 2.2)
+6. [ ] Crear todos los routers + registrar en `main.py` (Fase 4)
+7. [ ] Implementar autenticación JWT (Fase 5)
+8. [ ] Exception handlers (Fase 6)
+9. [ ] Paginación genérica (Fase 7)
+10. [ ] Alembic + seed (Fase 8)
+11. [ ] Tests (Fase 9)
+12. [ ] GraphQL (opcional — Fase 10)
+13. [ ] Docker (Fase 11)
