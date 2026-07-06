@@ -13,7 +13,7 @@ class DireccionService:
     ) -> DireccionResponseDTO:
 
         direccion_db = Direccion(
-            nombre_direccion= direccion_in.nombre_direccion
+            nombre_direccion= direccion_in.descripcion
         )
 
         direccion_creado = DireccionRepository.create_direccion(db, direccion_db)
