@@ -15,6 +15,9 @@ from app.db.database import get_db
 from app.schemas.canal_dto import CanalCreateDTO, CanalResponseDTO, CanalUpdateDTO
 from app.services.canal_service import canal_service
 
+ 
+canal_services = canal_service()
+
 # ── Configuración del router ────────────────────────────────────────
 # prefix: prefijo de la URL (ej: /canales)
 # tags:   agrupa los endpoints en Swagger bajo "Canales"
@@ -36,7 +39,7 @@ def create_canal(
 
     - **nombre_canal**: nombre único del canal de atención.
     """
-    return canal_service.create_canal(db, canal_in)
+    return canal_services.create_canal(db, canal_in)
 
 
 # ── READ (listado) ──────────────────────────────────────────────────
@@ -49,7 +52,7 @@ def get_all_canales(
     db: Session = Depends(get_db),
 ) -> list[CanalResponseDTO]:
     """Obtiene la lista completa de canales registrados."""
-    return canal_service.get_all_canales(db)
+    return canal_services.get_all_canales(db)
 
 
 # ── READ (uno solo) ─────────────────────────────────────────────────
@@ -66,7 +69,7 @@ def get_canal_by_id(
 
     - **id_canal**: identificador único del canal.
     """
-    canal = canal_service.get_canal_by_id(db, id_canal)
+    canal = canal_services.get_canal_by_id(db, id_canal)
     if canal is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -91,7 +94,7 @@ def update_canal(
     - **id_canal**: ID del canal a modificar.
     - **nombre_canal** (opcional): nuevo nombre del canal.
     """
-    canal = canal_service.update_canal(db, id_canal, canal_update)
+    canal = canal_services.update_canal(db, id_canal, canal_update)
     if canal is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -114,7 +117,7 @@ def delete_canal(
 
     - **id_canal**: ID del canal a eliminar.
     """
-    eliminado = canal_service.delete_canal(db, id_canal)
+    eliminado = canal_services.delete_canal(db, id_canal)
     if not eliminado:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
