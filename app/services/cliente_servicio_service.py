@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.clientes_servicios import ClienteServicio
-from app.repositories.cliente_servicio_repository import ClienteServicioRepository
+from app.repositories.cliente_servicio_repository import cliente_servicio_repository
 from app.schemas.cliente_servicio_dto import ClienteServicioCreateDTO, ClienteServicioResponseDTO, ClienteServicioUpdateDTO
 
 class ClienteServicioService:
@@ -18,7 +18,7 @@ class ClienteServicioService:
             fecha_adquisicion= cliente_servicio_in.fecha_adquisicion
         )
 
-        cliente_servicio_creado = ClienteServicioRepository.create_cliente_servicio(db, cliente_servicio_db)
+        cliente_servicio_creado = cliente_servicio_repository.create_cliente_servicio(db, cliente_servicio_db)
 
         return ClienteServicioResponseDTO.model_validate(cliente_servicio_creado)
     
@@ -29,7 +29,7 @@ class ClienteServicioService:
             id_cliente_servicio: int,
     ) -> ClienteServicioResponseDTO | None:
 
-        cliente_servicio = ClienteServicioRepository.get_cliente_servicio_by_id(db, id_cliente_servicio)
+        cliente_servicio = cliente_servicio_repository.get_cliente_servicio_by_id(db, id_cliente_servicio)
 
         if cliente_servicio is None:
             return None
@@ -40,7 +40,7 @@ class ClienteServicioService:
             db: Session,
     ) -> list[ClienteServicioResponseDTO]:
 
-        clientes_servicios = ClienteServicioRepository.get_list_clientes_servicios(db)
+        clientes_servicios = cliente_servicio_repository.get_list_clientes_servicios(db)
 
         return [ClienteServicioResponseDTO.model_validate(cliente_servicio) for cliente_servicio in clientes_servicios]
     
@@ -51,7 +51,7 @@ class ClienteServicioService:
             cliente_servicio_in: ClienteServicioUpdateDTO,
     ) -> ClienteServicioResponseDTO | None:
 
-        cliente_servicio_db = ClienteServicioRepository.get_cliente_servicio_by_id(db, id_cliente_servicio)
+        cliente_servicio_db = cliente_servicio_repository.get_cliente_servicio_by_id(db, id_cliente_servicio)
 
         if cliente_servicio_db is None:
             return None
@@ -61,7 +61,7 @@ class ClienteServicioService:
             setattr(cliente_servicio_db, field, value)
 
         # Guardar los cambios en la base de datos
-        cliente_servicio_actualizado = ClienteServicioRepository.update_cliente_servicio(db, cliente_servicio_db)
+        cliente_servicio_actualizado = cliente_servicio_repository.update_cliente_servicio(db, cliente_servicio_db)
 
         return ClienteServicioResponseDTO.model_validate(cliente_servicio_actualizado)
     
@@ -71,12 +71,12 @@ class ClienteServicioService:
             id_cliente_servicio: int,
     ) -> bool:
 
-        cliente_servicio_db = ClienteServicioRepository.get_cliente_servicio_by_id(db, id_cliente_servicio)
+        cliente_servicio_db = cliente_servicio_repository.get_cliente_servicio_by_id(db, id_cliente_servicio)
 
         if cliente_servicio_db is None:
             return False
 
-        ClienteServicioRepository.delete_cliente_servicio(db, cliente_servicio_db)
+        cliente_servicio_repository.delete_cliente_servicio(db, cliente_servicio_db)
 
         return True 
 

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.departamentos import Departamento
-from app.repositories.departamento_repository import DepartamentoRepository
+from app.repositories.departamento_repository import departamento_repository
 from app.schemas.departamento_dto import DepartamentoCreateDTO, DepartamentoResponseDTO, DepartamentoUpdateDTO
 
 class DepartamentoService:
@@ -16,7 +16,7 @@ class DepartamentoService:
             nombre_departamento= departamento_in.nombre_departamento
         )
 
-        departamento_creado = DepartamentoRepository.create_departamento(db, departamento_db)
+        departamento_creado = departamento_repository.create_departamento(db, departamento_db)
 
         return DepartamentoResponseDTO.model_validate(departamento_creado)
     
@@ -27,7 +27,7 @@ class DepartamentoService:
             id_departamento: int,
     ) -> DepartamentoResponseDTO | None:
 
-        departamento = DepartamentoRepository.get_departamento_by_id(db, id_departamento)
+        departamento = departamento_repository.get_departamento_by_id(db, id_departamento)
 
         if departamento is None:
             return None
@@ -38,7 +38,7 @@ class DepartamentoService:
             db: Session,
     ) -> list[DepartamentoResponseDTO]:
 
-        departamentos = DepartamentoRepository.get_list_departamentos(db)
+        departamentos = departamento_repository.get_list_departamentos(db)
 
         return [DepartamentoResponseDTO.model_validate(departamento) for departamento in departamentos]
     
@@ -49,7 +49,7 @@ class DepartamentoService:
             departamento_in: DepartamentoUpdateDTO,
     ) -> DepartamentoResponseDTO | None:
 
-        departamento_db = DepartamentoRepository.get_departamento_by_id(db, id_departamento)
+        departamento_db = departamento_repository.get_departamento_by_id(db, id_departamento)
 
         if departamento_db is None:
             return None
@@ -59,7 +59,7 @@ class DepartamentoService:
             setattr(departamento_db, field, value)
 
         # Delegar la actualización al repositorio (commit)
-        departamento_actualizado = DepartamentoRepository.update_departamento(db, departamento_db)
+        departamento_actualizado = departamento_repository.update_departamento(db, departamento_db)
 
         return DepartamentoResponseDTO.model_validate(departamento_actualizado)
     
@@ -69,12 +69,12 @@ class DepartamentoService:
             id_departamento: int,
     ) -> bool:
 
-        departamento_db = DepartamentoRepository.get_departamento_by_id(db, id_departamento)
+        departamento_db = departamento_repository.get_departamento_by_id(db, id_departamento)
 
         if departamento_db is None:
             return False
 
-        DepartamentoRepository.delete_departamento(db, departamento_db)
+        departamento_repository.delete_departamento(db, departamento_db)
         return True
     
 

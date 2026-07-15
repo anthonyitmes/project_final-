@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.empleados import Empleado
-from app.repositories.empleado_repository import EmpleadoRepository
+from app.repositories.empleado_repository import empleado_repository
 from app.schemas.empleado_dto import EmpleadoCreateDTO, EmpleadoResponseDTO, EmpleadoUpdateDTO
 
 class EmpleadoService:
@@ -15,7 +15,7 @@ class EmpleadoService:
             nombre_empleado= empleado_in.nombre_empleado
         )
 
-        empleado_creado = EmpleadoRepository.create_empleado(db, empleado_db)
+        empleado_creado = empleado_repository.create_empleado(db, empleado_db)
 
         return EmpleadoResponseDTO.model_validate(empleado_creado)
 
@@ -25,7 +25,7 @@ class EmpleadoService:
             id_empleado: int,
     ) -> EmpleadoResponseDTO | None:
 
-        empleado = EmpleadoRepository.get_empleado_by_id(db, id_empleado)
+        empleado = empleado_repository.get_empleado_by_id(db, id_empleado)
 
         if empleado is None:
             return None
@@ -36,7 +36,7 @@ class EmpleadoService:
             db: Session,
     ) -> list[EmpleadoResponseDTO]:
 
-        empleados = EmpleadoRepository.get_list_empleados(db)
+        empleados = empleado_repository.get_list_empleados(db)
 
         return [EmpleadoResponseDTO.model_validate(empleado) for empleado in empleados]
     
@@ -47,7 +47,7 @@ class EmpleadoService:
             empleado_in: EmpleadoUpdateDTO,
     ) -> EmpleadoResponseDTO | None:
 
-        empleado_db = EmpleadoRepository.get_empleado_by_id(db, id_empleado)
+        empleado_db = empleado_repository.get_empleado_by_id(db, id_empleado)
 
         if empleado_db is None:
             return None
@@ -67,12 +67,12 @@ class EmpleadoService:
             id_empleado: int,
     ) -> bool:
 
-        empleado_db = EmpleadoRepository.get_empleado_by_id(db, id_empleado)
+        empleado_db = empleado_repository.get_empleado_by_id(db, id_empleado)
 
         if empleado_db is None:
             return False
 
-        EmpleadoRepository.delete_empleado(db, empleado_db)
+        empleado_repository.delete_empleado(db, empleado_db)
         return True
     
 empleado_service = EmpleadoService()

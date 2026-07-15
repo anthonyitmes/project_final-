@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.clientes import Cliente
-from app.repositories.cliente_repository import ClienteRepository
+from app.repositories.cliente_repository import cliente_repository
 from app.schemas.cliente_dto import ClienteCreateDTO, ClienteResponseDTO, ClienteUpdateDTO
 
 class ClienteService:
@@ -16,7 +16,7 @@ class ClienteService:
             nombre_cliente= cliente_in.nombre_cliente
         )
 
-        cliente_creado = ClienteRepository.create_cliente(db, cliente_db)
+        cliente_creado = cliente_repository.create_cliente(db, cliente_db)
 
         return ClienteResponseDTO.model_validate(cliente_creado)
     
@@ -27,7 +27,7 @@ class ClienteService:
             id_cliente: int,
     ) -> ClienteResponseDTO | None:
 
-        cliente = ClienteRepository.get_cliente_by_id(db, id_cliente)
+        cliente = cliente_repository.get_cliente_by_id(db, id_cliente)
 
         if cliente is None:
             return None
@@ -39,7 +39,7 @@ class ClienteService:
             email: str,
     ) -> ClienteResponseDTO | None:
 
-        cliente = ClienteRepository.get_cliente_by_email(db, email)
+        cliente = cliente_repository.get_cliente_by_email(db, email)
 
         if cliente is None:
             return None
@@ -50,7 +50,7 @@ class ClienteService:
             db: Session,
     ) -> list[ClienteResponseDTO]:
 
-        clientes = ClienteRepository.get_list_clientes(db)
+        clientes = cliente_repository.get_list_clientes(db)
 
         return [ClienteResponseDTO.model_validate(cliente) for cliente in clientes]
 
@@ -63,9 +63,9 @@ class ClienteService:
 
         datos = cliente_update.model_dump(exclude_unset=True)
         if not datos:
-            cliente = ClienteRepository.get_cliente_by_id(db, id_cliente)
+            cliente = cliente_repository.get_cliente_by_id(db, id_cliente)
             return ClienteResponseDTO.model_validate(cliente) if cliente else None
-        cliente_actualizado = ClienteRepository.update_cliente(
+        cliente_actualizado = cliente_repository.update_cliente(
             db, id_cliente, datos
         )
         if cliente_actualizado is None:
@@ -78,6 +78,6 @@ class ClienteService:
             id_cliente: int,
     ) -> bool:
 
-        return ClienteRepository.delete_cliente(db, id_cliente)
+        return cliente_repository.delete_cliente(db, id_cliente)
 
 cliente_service = ClienteService()

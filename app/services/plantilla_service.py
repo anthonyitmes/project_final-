@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.plantilla_formulario import PlantillaFormulario
-from app.repositories.plantilla_formulario_repository import PlantillaFormularioRepository
+from app.repositories.plantilla_formulario_repository import plantilla_formulario_repository
 from app.schemas.plantilla_formulario_dto import (
     PlantillaFormularioCreateDTO,
     PlantillaFormularioResponseDTO,
@@ -76,7 +76,7 @@ class PlantillaService:
             estado_plantilla=plantilla_in.estado_plantilla,
         )
         plantilla_creada = (
-            PlantillaFormularioRepository.create_plantilla_formulario(
+            plantilla_formulario_repository.create_plantilla_formulario(
                 db, plantilla_db
             )
         )
@@ -102,7 +102,7 @@ class PlantillaService:
         PlantillaFormularioResponseDTO | None
             DTO de la plantilla si existe; None si no se encuentra.
         """
-        plantilla = PlantillaFormularioRepository.get_plantilla_formulario_by_id(
+        plantilla = plantilla_formulario_repository.get_plantilla_formulario_by_id(
             db, id_plantilla
         )
         if plantilla is None:
@@ -126,7 +126,7 @@ class PlantillaService:
             Lista de DTOs (vacía si no hay plantillas).
         """
         plantillas = (
-            PlantillaFormularioRepository.get_list_plantillas_formulario(db)
+            plantilla_formulario_repository.get_list_plantillas_formulario(db)
         )
         return [
             PlantillaFormularioResponseDTO.model_validate(p) for p in plantillas
@@ -173,7 +173,7 @@ class PlantillaService:
         datos = plantilla_update.model_dump(exclude_unset=True)
         if not datos:
             plantilla = (
-                PlantillaFormularioRepository.get_plantilla_formulario_by_id(
+                plantilla_formulario_repository.get_plantilla_formulario_by_id(
                     db, id_plantilla
                 )
             )
@@ -188,7 +188,7 @@ class PlantillaService:
         # Mientras tanto, construimos una entidad temporal con los datos.
         plantilla_temp = PlantillaFormulario(**datos)
         plantilla_actualizada = (
-            PlantillaFormularioRepository.update_plantilla_formulario(
+            plantilla_formulario_repository.update_plantilla_formulario(
                 db, id_plantilla, plantilla_temp
             )
         )
@@ -199,7 +199,7 @@ class PlantillaService:
 def delete_plantilla(self, db: Session, id_plantilla: int) -> bool:
 
    
-    return PlantillaFormularioRepository.delete_plantilla_formulario(
+    return plantilla_formulario_repository.delete_plantilla_formulario(
              db, id_plantilla
         )
 

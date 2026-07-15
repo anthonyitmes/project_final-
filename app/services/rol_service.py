@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.roles import Rol
-from app.repositories.rol_repository import RolRepository
+from app.repositories.rol_repository import rol_repository
 from app.schemas.rol_dto import RolCreateDTO, RolResponseDTO, RolUpdateDTO
 
 class RolService:
@@ -14,7 +14,7 @@ class RolService:
             nombre_rol= rol_in.nombre_rol
         )
 
-        rol_creado = RolRepository.create_rol(db, rol_db)
+        rol_creado = rol_repository.create_rol(db, rol_db)
 
         return RolResponseDTO.model_validate(rol_creado)
     
@@ -24,7 +24,7 @@ class RolService:
             id_rol: int,
     ) -> RolResponseDTO | None:
 
-        rol = RolRepository.get_rol_by_id(db, id_rol)
+        rol = rol_repository.get_rol_by_id(db, id_rol)
 
         if rol is None:
             return None
@@ -35,7 +35,7 @@ class RolService:
             db: Session,
     ) -> list[RolResponseDTO]:
 
-        roles = RolRepository.get_list_roles(db)
+        roles = rol_repository.get_list_roles(db)
 
         return [RolResponseDTO.model_validate(rol) for rol in roles]
     
@@ -46,7 +46,7 @@ class RolService:
             rol_in: RolUpdateDTO,
     ) -> RolResponseDTO | None:
 
-        rol_db = RolRepository.get_rol_by_id(db, id_rol)
+        rol_db = rol_repository.get_rol_by_id(db, id_rol)
 
         if rol_db is None:
             return None
@@ -61,12 +61,12 @@ class RolService:
             id_rol: int,
     ) -> bool:
 
-        rol = RolRepository.get_rol_by_id(db, id_rol)
+        rol = rol_repository.get_rol_by_id(db, id_rol)
 
         if rol is None:
             return False
 
-        return RolRepository.delete_rol(db, id_rol)
+        return rol_repository.delete_rol(db, id_rol)
     
 
 rol_service = RolService()
