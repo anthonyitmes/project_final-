@@ -7,7 +7,8 @@ from app.schemas.departamento_dto import DepartamentoCreateDTO, DepartamentoResp
 from app.services.departament_service import departamento_service
 
 # Corrección: nombre de variable (antes "canal_departamento_services", copiado del canal)
-departamento_services = departamento_service()
+# departamento_service ya es una instancia singleton, no se instancia de nuevo
+departamento_services = departamento_service
 
 # ── Configuración del router ────────────────────────────────────────
 # prefix: prefijo de la URL (ej: /departamentos)

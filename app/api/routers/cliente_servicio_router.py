@@ -9,7 +9,8 @@ from app.schemas.cliente_servicio_dto import (
 )
 from app.services.cliente_servicio_service import cliente_servicio_service
 
-cliente_servicio_services = cliente_servicio_service()
+# cliente_servicio_service ya es una instancia singleton, no se instancia de nuevo
+cliente_servicio_services = cliente_servicio_service
 
 router = APIRouter(prefix="/cliente_servicios", tags=["ClienteServicios"])
 

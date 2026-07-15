@@ -9,7 +9,8 @@ from app.schemas.municipio_dto import (
 )
 from app.services.municipio_service import municipio_service
 
-municipio_services = municipio_service()
+# municipio_service ya es una instancia singleton, no se instancia de nuevo
+municipio_services = municipio_service
 
 router = APIRouter(prefix="/municipios", tags=["Municipios"])
 
@@ -43,12 +44,12 @@ def get_all_municipios(
     """Obtiene la lista completa de municipios registrados en el sistema."""
     return municipio_services.get_all_municipios(db)
 
-@router.get
-(
+# FIX: @router.get y paréntesis en líneas separadas -> misma línea
+@router.get(
     "/{id_municipio}",
     response_model=MunicipioResponseDTO,
     summary="Obtener un municipio por ID",
-    description="Obtiene un municipio específico por su ID."
+    description="Obtiene un municipio específico por su ID.",
 )
 def get_municipio_by_id(
     id_municipio: int,

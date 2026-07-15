@@ -1,17 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, HTTTPException, status
+# FIX: HTTTPException -> HTTPException (doble T), reponse_model -> response_model, faltaba ':' en get_by_id
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.schemas.tipo_ticket_dto import TipoTicketCreateDTO, TipoTicketResponseDTO, TipoTicketUpdateDTO
 from app.services.tipo_ticket_service import tipo_ticket_service
 
-tipo_ticket_services = tipo_ticket_service()
+# tipo_ticket_service ya es una instancia singleton, no se instancia de nuevo
+tipo_ticket_services = tipo_ticket_service
 
 router = APIRouter(prefix="/tipos-ticket", tags=["Tipos de Ticket"])
 
 @router.post(
     "",
-    reponse_model = TipoTicketResponseDTO,
+    response_model=TipoTicketResponseDTO,
     status_code = status.HTTP_201_CREATED,
     summary = "crear un tipo de ticker",
     description = "Crea un nuevo tipo de ticket con los datos proporcionados",
@@ -44,7 +46,7 @@ def get_all_tipos_ticket(
 def get_tipo_ticket_by_id(
     id_tipo_ticket: int, 
     db: Session = Depends(get_db)
-) -> TipoTicketResponseDTO
+) -> TipoTicketResponseDTO:
     """Obtiene un tipo de ticket para su ID"""
     return tipo_ticket_services.get_tipo_ticket_by_id(db, id_tipo_ticket)
 

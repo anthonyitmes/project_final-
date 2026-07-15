@@ -9,7 +9,8 @@ from app.schemas.empleado_dto import (
 )
 from app.services.empleado_service import empleado_service
 
-empleado_services = empleado_service()
+# empleado_service ya es una instancia singleton, no se instancia de nuevo
+empleado_services = empleado_service
 router = APIRouter(prefix="/empleados", tags=["Empleados"])
 
 @router.post(

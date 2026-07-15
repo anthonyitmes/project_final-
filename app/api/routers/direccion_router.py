@@ -2,95 +2,117 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.schemas.cliente_servicio_dto import (
-    ClienteServicioCreateDTO, 
-    ClienteServicioResponseDTO,
-    ClienteServicioUpdateDTO
+from app.schemas.direccion_dto import (
+    DireccionCreateDTO,
+    DireccionResponseDTO,
+    DireccionUpdateDTO,
 )
-from app.services.cliente_servicio_service import cliente_servicio_service
+from app.services.direccion_service import direccion_service
 
+# direccion_service ya es una instancia singleton, no se instancia de nuevo
+direccion_services = direccion_service
 
-cliente_servicio_services = cliente_servicio_service()
-
-router = APIRouter(prefix="/cliente_servicios", tags=["ClienteServicios"])
+router = APIRouter(prefix="/direcciones", tags=["Direcciones"])
 
 @router.post(
     "",
-    response_model=ClienteServicioResponseDTO,
+    response_model=DireccionResponseDTO,
     status_code=status.HTTP_201_CREATED,
-    summary="Crear un cliente_servicio",
-    description="Crea un nuevo cliente_servicio en el sistema."
+    summary="Crear una dirección",
+    description="Crea una nueva dirección en el sistema."
 )
-def create_cliente_servicio(
-    cliente_servicio_in: ClienteServicioCreateDTO,
+def create_direccion(
+    direccion_in: DireccionCreateDTO,
     db: Session = Depends(get_db)
-) -> ClienteServicioResponseDTO:
-    """Crea un nuevo cliente_servicio en el sistema.
+) -> DireccionResponseDTO:
+    """Crea una nueva dirección en el sistema.
 
+    - **descripcion**: Descripción de la dirección.
+    - **calle**: Calle de la dirección.
+    - **zona**: Zona de la dirección.
+    - **avenida**: Avenida (opcional).
+    - **referencia**: Referencia (opcional).
+    - **detalles_direccion**: Detalles adicionales.
     - **id_cliente**: ID del cliente asociado.
-    - **id_servicio**: ID del servicio asociado.
+    - **id_municipio**: ID del municipio asociado.
     """
-    return cliente_servicio_services.create_cliente_servicio(db, cliente_servicio_in)
+    return direccion_services.create_direccion(db, direccion_in)
 
 @router.get(
     "",
-    response_model=list[ClienteServicioResponseDTO],
-    summary="Listar todos los cliente_servicios",
-    description="Obtiene la lista completa de cliente_servicios registrados en el sistema."
+    response_model=list[DireccionResponseDTO],
+    summary="Listar todas las direcciones",
+    description="Obtiene la lista completa de direcciones registradas en el sistema."
 )
-def get_all_cliente_servicios(
+def get_list_direcciones(
     db: Session = Depends(get_db)
-) -> list[ClienteServicioResponseDTO]:
-    """Obtiene la lista completa de cliente_servicios registrados en el sistema."""
-    return cliente_servicio_services.get_all_cliente_servicios(db)  
+) -> list[DireccionResponseDTO]:
+    """Obtiene la lista completa de direcciones registradas en el sistema."""
+    return direccion_services.get_list_direcciones(db)
 
 @router.get(
-    "/{id_cliente_servicio}",
-    response_model=ClienteServicioResponseDTO,
-    summary="Obtener un cliente_servicio por ID",
-    description="Obtiene un cliente_servicio específico por su ID."
+    "/{id_direccion}",
+    response_model=DireccionResponseDTO,
+    summary="Obtener una dirección por ID",
+    description="Obtiene una dirección específica por su ID."
 )
-def get_cliente_servicio_by_id( 
-    id_cliente_servicio: int,
+def get_direccion_by_id(
+    id_direccion: int,
     db: Session = Depends(get_db)
-) -> ClienteServicioResponseDTO:
-    """Obtiene un cliente_servicio específico por su ID.
+) -> DireccionResponseDTO:
+    """Obtiene una dirección específica por su ID.
 
-    - **id_cliente_servicio**: ID del cliente_servicio a buscar.
+    - **id_direccion**: ID de la dirección a buscar.
     """
-    return cliente_servicio_services.get_cliente_servicio_by_id(db, id_cliente_servicio)
+    direccion = direccion_services.get_direccion_by_id(db, id_direccion)
+    if direccion is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Dirección con ID {id_direccion} no encontrada",
+        )
+    return direccion
 
 @router.patch(
-    "/{id_cliente_servicio}",
-    response_model=ClienteServicioResponseDTO,
-    summary="Actualizar un cliente_servicio por ID",
-    description="Actualiza un cliente_servicio específico por su ID."
+    "/{id_direccion}",
+    response_model=DireccionResponseDTO,
+    summary="Actualizar una dirección por ID",
+    description="Actualiza los datos de una dirección específica por su ID."
 )
-def update_cliente_servicio(
-    id_cliente_servicio: int,
-    cliente_servicio_in: ClienteServicioUpdateDTO,
+def update_direccion(
+    id_direccion: int,
+    direccion_in: DireccionUpdateDTO,
     db: Session = Depends(get_db)
-) -> ClienteServicioResponseDTO:
-    """Actualiza un cliente_servicio específico por su ID.
+) -> DireccionResponseDTO:
+    """Actualiza los datos de una dirección específica por su ID.
 
-    - **id_cliente_servicio**: ID del cliente_servicio a actualizar.
-    - **cliente_servicio_in**: Datos actualizados del cliente_servicio.
+    - **id_direccion**: ID de la dirección a actualizar.
+    - **direccion_in**: Datos a actualizar de la dirección.
     """
-    return cliente_servicio_services.update_cliente_servicio(db, id_cliente_servicio, cliente_servicio_in)
+    direccion = direccion_services.update_direccion(db, id_direccion, direccion_in)
+    if direccion is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Dirección con ID {id_direccion} no encontrada",
+        )
+    return direccion
 
 @router.delete(
-    "/{id_cliente_servicio}",
+    "/{id_direccion}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Eliminar un cliente_servicio por ID",
-    description="Elimina un cliente_servicio específico por su ID."
+    summary="Eliminar una dirección por ID",
+    description="Elimina una dirección específica por su ID."
 )
-def delete_cliente_servicio(
-    id_cliente_servicio: int,
+def delete_direccion(
+    id_direccion: int,
     db: Session = Depends(get_db)
 ) -> None:
-    eliminado = cliente_servicio_services.delete_cliente_servicio(db, id_cliente_servicio)
+    """Elimina una dirección específica por su ID.
+
+    - **id_direccion**: ID de la dirección a eliminar.
+    """
+    eliminado = direccion_services.delete_direccion(db, id_direccion)
     if not eliminado:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"ClienteServicio con ID {id_cliente_servicio} no encontrado",
+            detail=f"Dirección con ID {id_direccion} no encontrada",
         )

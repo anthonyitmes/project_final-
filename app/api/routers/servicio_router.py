@@ -7,7 +7,8 @@ from app.services.servicio_service import servicio_service
 
 #conexion con service
 
-servicio_services = servicio_service()
+# servicio_service ya es una instancia singleton, no se instancia de nuevo
+servicio_services = servicio_service
 
 router = APIRouter(prefix="/servicios", tags=["Servicios"])
 

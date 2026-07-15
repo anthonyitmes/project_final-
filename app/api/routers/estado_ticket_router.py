@@ -5,7 +5,8 @@ from app.db.database import get_db
 from app.schemas.estado_ticket_dto import EstadoTicketCreateDTO, EstadoTicketResponseDTO, EstadoTicketUpdateDTO
 from app.services.estado_ticket_service import estado_ticket_service
 
-estado_ticket_services = estado_ticket_service()
+# estado_ticket_service ya es una instancia singleton, no se instancia de nuevo
+estado_ticket_services = estado_ticket_service
 
 router = APIRouter(prefix="/estados-ticket", tags=["Estados de Ticket"])
 
@@ -37,9 +38,10 @@ def get_all_estados_ticket(
     """Obtiene la lista completa de estados de ticket registrados."""
     return estado_ticket_services.get_all_estados_ticket(db)
 
+# FIX: reponse_model -> response_model, id_canal -> id_estado_ticket
 @router.get(
-    "{id_canal}",
-    reponse_model = EstadoTicketResponseDTO,
+    "/{id_estado_ticket}",
+    response_model=EstadoTicketResponseDTO,
     summary = "Obtener un estado de ticket por ID",
     description = "Obtiene un estado de ticket específico por su ID",
 )

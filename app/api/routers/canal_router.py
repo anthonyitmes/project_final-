@@ -16,7 +16,9 @@ from app.schemas.canal_dto import CanalCreateDTO, CanalResponseDTO, CanalUpdateD
 from app.services.canal_service import canal_service
 
  
-canal_services = canal_service()
+# canal_service ya es una instancia singleton (CanalService())
+# importada de app.services.canal_service. No se instancia de nuevo.
+canal_services = canal_service
 
 # ── Configuración del router ────────────────────────────────────────
 # prefix: prefijo de la URL (ej: /canales)
