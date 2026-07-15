@@ -63,7 +63,7 @@ class DepartamentoService:
 
         return DepartamentoResponseDTO.model_validate(departamento_actualizado)
     
-    def delete_departamento(
+    def delete_departamentos(
             self,
             db: Session,
             id_departamento: int,
