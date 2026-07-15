@@ -1,6 +1,6 @@
 # 🗺️ Roadmap para completar el Backend — `project_final`
 
-> Última actualización: 06/jul/2026 — Fase 2 completada, Fase 3 completada, Fase 4 iniciada (canal_router creado)
+> Última actualización: 15/jul/2026 — Fase 4 completada (14/14 routers construidos), Fase 5 (Auth JWT) siguiente
 
 ---
 
@@ -34,7 +34,7 @@ EL ROUTER SOLO RECIBE HTTP Y LLAMA AL SERVICE — nunca toca BD directamente
 
 ---
 
-## 📋 Resumen de estado actual (06/jul/2026)
+## 📋 Resumen de estado actual (15/jul/2026)
 
 | Capa | Estado |
 |---|---|
@@ -42,8 +42,8 @@ EL ROUTER SOLO RECIBE HTTP Y LLAMA AL SERVICE — nunca toca BD directamente
 | Schemas/DTOs (Pydantic) | ✅ Completos (15 archivos — `auth_dto.py` ya contiene `LoginRequestDTO` y `TokenResponseDTO`) |
 | Repositories | ✅ 15/15 estandarizados — todos usan `dict` en update, todos tienen delete |
 | Services | ✅ 14/14 implementados |
-| Routers (FastAPI) | ⚠️ 2/14 implementados: `ticket_router` + `canal_router` (ejemplo canónico) |
-| `main.py` | ⚠️ Solo registra `ticket_router` — falta registrar los demás |
+| Routers (FastAPI) | ✅ 14/14 construidos |
+| `main.py` | ⚠️ Solo registra 1 de 14 routers — **siguiente paso inmediato** |
 | Auth (JWT) | ❌ Sin implementar — `auth_dto.py` se usará en Fase 5 directamente en el router |
 | `.env` | ✅ Existe — requiere revisar `DB_PASSWORD` |
 | Exception handlers | ❌ Sin implementar |
@@ -122,60 +122,31 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 
 ---
 
-## 🌐 Fase 4 — Crear Routers REST (EN PROGRESO)
+## 🌐 Fase 4 — Crear Routers REST ✅ COMPLETADO (15/jul/2026)
 
-### 📐 Anatomía de un router (5 endpoints estándar)
+### 4.1 Routers construidos (14/14)
 
-Cada router de catálogo sigue este esqueleto exacto:
+| # | Archivo | Prefijo | Estado |
+|---|---------|---------|--------|
+| 1 | `canal_router.py` | `/canales` | ✅ |
+| 2 | `departamento_router.py` | `/departamentos` | ✅ |
+| 3 | `estado_ticket_router.py` | `/estados-ticket` | ✅ |
+| 4 | `nivel_impacto_router.py` | `/niveles-impacto` | ✅ |
+| 5 | `rol_router.py` | `/roles` | ✅ |
+| 6 | `servicio_router.py` | `/servicios` | ✅ |
+| 7 | `tipo_ticket_router.py` | `/tipos-ticket` | ✅ |
+| 8 | `cliente_router.py` | `/clientes` | ✅ |
+| 9 | `cliente_servicio_router.py` | `/clientes-servicios` | ✅ |
+| 10 | `direccion_router.py` | `/direcciones` | ✅ |
+| 11 | `empleado_router.py` | `/empleados` | ✅ |
+| 12 | `municipio_router.py` | `/municipios` | ✅ |
+| 13 | `plantilla_formulario_router.py` | `/plantillas` | ✅ |
+| 14 | `ticket_router.py` | `/tickets` | ✅ |
 
-```
-router = APIRouter(prefix="/xxx", tags=["Xxx"])
+### 4.2 Registrar todos los routers en `main.py`
 
-POST   /xxx              → create_xxx(xxx_in: CreateDTO, db: Depends) -> ResponseDTO (201)
-GET    /xxx              → get_all_xxx(db: Depends) -> list[ResponseDTO]
-GET    /xxx/{id}         → get_xxx_by_id(id, db: Depends) -> ResponseDTO | 404
-PATCH  /xxx/{id}         → update_xxx(id, dto: UpdateDTO, db: Depends) -> ResponseDTO | 404
-DELETE /xxx/{id}         → delete_xxx(id, db: Depends) -> None | 404 (204)
-```
-
-### Reglas para crear un router:
-1. **Importar**: `APIRouter, Depends, HTTPException, status` de FastAPI
-2. **Importar**: `get_db` de `app.db.database`
-3. **Importar**: los 3 DTOs (`CreateDTO`, `ResponseDTO`, `UpdateDTO`) del schema
-4. **Importar**: la instancia singleton del service (ej: `canal_service`)
-5. **`db: Session = Depends(get_db)`** en cada endpoint
-6. **Si `service.xxx()` retorna `None`** → `raise HTTPException(404)`
-7. **PATCH usa `response_model`** igual que GET (el service ya maneja el partial update)
-8. **DELETE retorna `204 No Content`** con `status_code=status.HTTP_204_NO_CONTENT`
-9. **El nombre de la función exportada debe coincidir** con `from app.api.routers.xxx_router import router`
-
-> **Plantilla canónica:** `app/api/routers/canal_router.py`
-
-### 4.1 Routers de catálogos
-
-- [x] `app/api/routers/canal_router.py` — Creado (06/jul, ejemplo canónico)
-- [ ] `app/api/routers/estado_ticket_router.py`
-- [ ] `app/api/routers/tipo_ticket_router.py`
-- [ ] `app/api/routers/nivel_impacto_router.py`
-- [ ] `app/api/routers/plantilla_router.py`
-- [ ] `app/api/routers/servicio_router.py`
-- [ ] `app/api/routers/rol_router.py`
-- [ ] `app/api/routers/departamento_router.py`
-- [ ] `app/api/routers/municipio_router.py`
-
-### 4.2 Routers de entidades principales
-
-- [ ] `app/api/routers/cliente_router.py`
-- [ ] `app/api/routers/empleado_router.py`
-- [ ] `app/api/routers/direccion_router.py`
-
-### 4.3 Router ya implementado
-
-- [x] `app/api/routers/ticket_router.py` — Completo
-
-### 4.4 Registrar todos los routers en `main.py`
-
-- [ ] Importar y registrar cada router con `app.include_router()`
+- [ ] **PENDIENTE:** Importar y registrar los 13 routers faltantes con `app.include_router()`
+- [ ] Probar que Swagger (`/docs`) muestra los 14 grupos de endpoints
 
 ---
 
@@ -241,8 +212,8 @@ DELETE /xxx/{id}         → delete_xxx(id, db: Depends) -> None | 404 (204)
 1. [ ] Revisar `.env` y verificar que arranca (Fase 1)
 2. [x] ~~Corregir repositorios~~ ✅ Fase 2 COMPLETADA
 3. [x] ~~Crear services faltantes~~ ✅ Fase 3 COMPLETADA
-4. [ ] **AHORA:** Crear los 12 routers faltantes + registrar en `main.py` (Fase 4)
-5. [ ] Implementar autenticación JWT (Fase 5)
+4. [x] ~~Crear los 14 routers~~ ✅ Fase 4 COMPLETADA (pendiente: registrar en `main.py`)
+5. [ ] **AHORA:** Implementar autenticación JWT (Fase 5)
 6. [ ] Exception handlers (Fase 6)
 7. [ ] Paginación genérica (Fase 7)
 8. [ ] Alembic + seed (Fase 8)
