@@ -1,0 +1,89 @@
+from fastapi import APIRouter, Depeds, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.db.database import get_db
+from app.schemas.cliente_dto import ClienteCreateDTO, ClienteResponseDTO, ClienteUpdateDTO
+from app.services.cliente_service import cliente_service
+
+cliente_services = cliente_service()
+
+router = APIRouter(prefix="/clientes", tags=["Clientes"])
+
+@router.post(
+    "",
+    response_model = ClienteResponseDTO, 
+    status_code = status.HTTP_201_CREATED,
+    summary = "Crear un cliente"
+    description = "Crea un nuevo cliente en el sistema."
+)
+def create_cliente(
+    cliente_in: ClienteCreateDTO, 
+    db: Session = Depends(get_db)
+) -> ClienteResponseDTO:
+    """Crea un nuevo cliente en el sistema.
+
+    - **nombre**: nombre del cliente.
+    - **apellido**: apellido del cliente.
+    - **email**: correo electrónico del cliente.
+    - **telefono**: número de teléfono del cliente.
+    """
+    return cliente_services.create_cliente(db, cliente_in)
+
+#leer los clientes
+@router.get(
+    "",
+    response_model = list[ClienteResponseDTO],
+    summary = "listar todos los clientes",
+    description = "Obtiene la lista completa de clientes registrados."
+)
+def get_all_clientes(
+    id_cliente: int, 
+    db: Session = Depends(get_db)
+) -> list[ClienteResponseDTO]:
+    """Obtiene la lista completa de clientes registrados."""
+    return cliente_services.get_all_clientes(db)    
+
+@router.get(
+    "/{id_cliente}",
+    response_model = ClienteResponseDTO,
+    summary = "Obtener un cliente por ID",
+    description = "Obtiene un cliente específico por su ID."
+)
+def get_cliente_by_id(
+    id_cliente: int, 
+    db: Session = Depends(get_db)
+) -> ClienteResponseDTO:
+    """Obtiene un cliente específico por su ID."""
+    return cliente_services.get_cliente_by_id(db, id_cliente)
+
+@router.patch(
+    "/{id_cliente}",
+    response_model = ClienteResponseDTO,
+    summary = "Actualizar un cliente por ID",
+    description = "Actualiza la información de un cliente específico por su ID."
+)
+def update_cliente(
+    id_cliente: int, 
+    cliente_in: ClienteUpdateDTO, 
+    db: Session = Depends(get_db)
+) -> ClienteResponseDTO:
+    """Actualiza la información de un cliente específico por su ID."""
+    return cliente_services.update_cliente(db, id_cliente, cliente_in)
+
+@router.delete(
+    "/{id_cliente}",
+    status_code = status.HTTP_204_NO_CONTENT,
+    summary = "Eliminar un cliente por ID",
+    description = "Elimina un cliente específico por su ID."
+)
+def delete_cliente(
+    id_cliente: int, 
+    db: Session = Depends(get_db)
+) -> None:
+    """Elimina un cliente específico por su ID."""
+    eliminado = cliente_services.delete_cliente(db, id_cliente)
+    if not eliminado:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Cliente con ID {id_cliente} no encontrado",
+        )
