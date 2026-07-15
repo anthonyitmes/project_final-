@@ -1,6 +1,6 @@
 # 🗺️ Roadmap para completar el Backend — `project_final`
 
-> Última actualización: 15/jul/2026 — Fase 4 completada (14/14 routers construidos), Fase 5 (Auth JWT) siguiente
+> Última actualización: 15/jul/2026 — Fase 4 completada y verificada, Fase 5 (Auth JWT) siguiente
 
 ---
 
@@ -40,19 +40,21 @@ EL ROUTER SOLO RECIBE HTTP Y LLAMA AL SERVICE — nunca toca BD directamente
 |---|---|
 | Modelos (SQLAlchemy) | ✅ 14/14 completos |
 | Schemas/DTOs (Pydantic) | ✅ Completos (15 archivos — `auth_dto.py` ya contiene `LoginRequestDTO` y `TokenResponseDTO`) |
-| Repositories | ✅ 15/15 estandarizados — todos usan `dict` en update, todos tienen delete |
-| Services | ✅ 14/14 implementados |
-| Routers (FastAPI) | ✅ 14/14 construidos |
-| `main.py` | ⚠️ Solo registra 1 de 14 routers — **siguiente paso inmediato** |
+| Repositories | ✅ 15/15 estandarizados — todos usan `dict` en update, todos tienen delete. Singletons agregados. |
+| Services | ✅ 14/14 implementados. `direccion_service.py` corregido (5 bugs). |
+| Routers (FastAPI) | ✅ 14/14 construidos y registrados en `main.py` — 72 endpoints funcionando |
+| `main.py` | ✅ Los 14 routers registrados con `app.include_router()` |
+| Base de datos | ✅ Tablas creadas en `user_db` vía SQLAlchemy `create_all()` |
 | Auth (JWT) | ❌ Sin implementar — `auth_dto.py` se usará en Fase 5 directamente en el router |
-| `.env` | ✅ Existe — requiere revisar `DB_PASSWORD` |
+| Async (async/await) | ❌ Toda la app es síncrona actualmente — migrar a async en Fase 12 |
+| `.env` | ✅ Configurado y funcional |
 | Exception handlers | ❌ Sin implementar |
 | GraphQL | ❌ Carpeta vacía |
 | Tests | ❌ Sin tests |
 
 ---
 
-## 🔧 Correcciones 30/jun - 06/jul/2026 — Estandarización completa
+## 🔧 Correcciones 30/jun - 15/jul/2026 — Estandarización completa
 
 ### Cambios realizados en Repositories (06/jul):
 Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los repositorios:
@@ -77,19 +79,31 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 - `servicio_service.py` — corregido (4 bugs)
 - `plantilla_service.py` — creado (JSONB + validación)
 
+### Cambios realizados el 15/jul/2026:
+| Hora | Archivo | Cambio |
+|------|---------|--------|
+| 15/jul | `app/services/*.py` (11 archivos) | Agregados singletons (`service = Clase()`) y corregidos imports en routers |
+| 15/jul | `app/repositories/cliente_repository.py` | Agregado singleton faltante |
+| 15/jul | `app/api/routers/direccion_router.py` | **Fix crítico:** era copia exacta de `cliente_servicio_router.py` (prefijo `/cliente_servicios`, 5 warnings Duplicate Operation ID). Reescrito con prefijo `/direcciones` y endpoints CRUD propios. |
+| 15/jul | `app/services/direccion_service.py` | **5 bugs corregidos:** (1) faltaba `from app.repositories.direccio_repository import direccion_repository`, (2) `create_direccion()` asignaba campo inexistente `nombre_direccion` → asigna 8 campos reales, (3) `update_direccion()` iteraba `setattr` sin commit → delega en repositorio, (4) `delete_direccion()` pasaba entidad en vez de `id_direccion`, (5) no importaba el singleton. |
+| 15/jul | `app/main.py` | Verificado: 14 routers registrados, 72 endpoints, 0 warnings |
+| 15/jul | Base de datos `user_db` | Tablas creadas con `Base.metadata.create_all()` (14 tablas). `GET /canales` → 200 OK. |
+| 15/jul | Git | 4 commits por carpeta + push a `origin/main` |
+
 ---
 
 ## 🧱 Fase 1 — Arreglar lo que impide arrancar
 
 ### 1.1 Revisar archivo `.env`
 - [x] Archivo `.env` creado
-- [ ] Verificar que `DB_PASSWORD` tenga la contraseña correcta de PostgreSQL
-- [ ] Verificar que `DB_NAME` coincida con la BD existente
+- [x] `DB_PASSWORD` verificada (`12345678`)
+- [x] `DB_NAME` = `user_db` (coincide con BD existente)
 
 ### 1.2 Verificar que la app arranca
-- [ ] Ejecutar `uvicorn app.main:app --reload`
-- [ ] Confirmar que imprime `"Conexión correcta a la base de datos"` en consola
-- [ ] Abrir `http://localhost:8000/docs` y confirmar que Swagger carga
+- [x] `uvicorn app.main:app --reload` ejecuta sin errores
+- [x] Imprime `"Conexión correcta a la base de datos"` en consola
+- [x] `http://localhost:8000/docs` carga Swagger con 72 endpoints
+- [x] `GET /canales` → 200 OK
 
 ---
 
@@ -98,10 +112,11 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 - [x] Los 15 repositorios estandarizados con `update(dict)` y `delete`
 - [x] `estado_ticket_repository.py` ya no importa schemas
 - [x] Contrato único: `(db: Session, id: int, datos: dict) -> Model | None`
+- [x] Singletons agregados en todos los repositorios (15/jul)
 
 ---
 
-## 🧠 Fase 3 — Services ✅ COMPLETADO (06/jul/2026)
+## 🧠 Fase 3 — Services ✅ COMPLETADO (06/jul/2026, corregido 15/jul)
 
 ### 3.1 Services implementados (14/14)
 
@@ -109,7 +124,7 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 - [x] `app/services/cliente_service.py`
 - [x] `app/services/cliente_servicio_service.py`
 - [x] `app/services/departament_service.py` (⚠️ typo: renombrar a `departamento_service.py`)
-- [x] `app/services/direccion_service.py` (⚠️ extensión `.PY` mayúscula, renombrar a `.py`)
+- [x] `app/services/direccion_service.py` — corregido 15/jul (5 bugs)
 - [x] `app/services/empleado_service.py`
 - [x] `app/services/estado_ticket_service.py`
 - [x] `app/services/municipio_service.py`
@@ -124,7 +139,7 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 
 ## 🌐 Fase 4 — Crear Routers REST ✅ COMPLETADO (15/jul/2026)
 
-### 4.1 Routers construidos (14/14)
+### 4.1 Routers construidos y registrados (14/14)
 
 | # | Archivo | Prefijo | Estado |
 |---|---------|---------|--------|
@@ -136,8 +151,8 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 | 6 | `servicio_router.py` | `/servicios` | ✅ |
 | 7 | `tipo_ticket_router.py` | `/tipos-ticket` | ✅ |
 | 8 | `cliente_router.py` | `/clientes` | ✅ |
-| 9 | `cliente_servicio_router.py` | `/clientes-servicios` | ✅ |
-| 10 | `direccion_router.py` | `/direcciones` | ✅ |
+| 9 | `cliente_servicio_router.py` | `/cliente_servicios` | ✅ |
+| 10 | `direccion_router.py` | `/direcciones` | ✅ (corregido 15/jul) |
 | 11 | `empleado_router.py` | `/empleados` | ✅ |
 | 12 | `municipio_router.py` | `/municipios` | ✅ |
 | 13 | `plantilla_formulario_router.py` | `/plantillas` | ✅ |
@@ -145,8 +160,9 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 
 ### 4.2 Registrar todos los routers en `main.py`
 
-- [ ] **PENDIENTE:** Importar y registrar los 13 routers faltantes con `app.include_router()`
-- [ ] Probar que Swagger (`/docs`) muestra los 14 grupos de endpoints
+- [x] **COMPLETADO:** Los 14 routers importados y registrados con `app.include_router()`
+- [x] Swagger (`/docs`) muestra 72 endpoints en 14 grupos
+- [x] 0 warnings de OpenAPI (corregido el Duplicate Operation ID)
 
 ---
 
@@ -207,16 +223,47 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 
 ---
 
-## ✅ Orden de ejecución recomendado (ACTUALIZADO 06/jul/2026)
+## ⚡ Fase 12 — Migración a async/await (NUEVA)
 
-1. [ ] Revisar `.env` y verificar que arranca (Fase 1)
+> **Objetivo:** Convertir toda la app a async para aprovechar el event loop de FastAPI,
+> permitir concurrencia real en operaciones I/O (DB, llamadas externas) y mejorar el rendimiento.
+
+### 12.1 — Migrar base de datos a async
+- [ ] Instalar `asyncpg` y `sqlalchemy[asyncio]`
+- [ ] Cambiar `engine` a `create_async_engine()` con `asyncpg`
+- [ ] Cambiar `SessionLocal` a `async_sessionmaker`
+- [ ] Actualizar `get_db()` a `async def get_db()` con `async with`
+
+### 12.2 — Migrar Repositories a async
+- [ ] Convertir los 15 repositorios a métodos `async def`
+- [ ] Usar `await db.execute()` en vez de `db.query()`
+- [ ] Usar `select()` de SQLAlchemy 2.0 style (ya compatible con async)
+
+### 12.3 — Migrar Services a async
+- [ ] Convertir los 14 services a métodos `async def`
+- [ ] `await` en cada llamada al repositorio
+
+### 12.4 — Migrar Routers a async
+- [ ] Convertir los 72 endpoints a `async def`
+- [ ] `await` en cada llamada al service
+
+### 12.5 — Verificar concurrencia
+- [ ] Probar con `httpx.AsyncClient` o `wrk` que múltiples requests se manejan concurrentemente
+- [ ] Verificar que no hay bloqueos con SQLAlchemy async
+
+---
+
+## ✅ Orden de ejecución recomendado (ACTUALIZADO 15/jul/2026)
+
+1. [x] ~~Revisar `.env` y verificar que arranca~~ ✅ Fase 1 COMPLETADA
 2. [x] ~~Corregir repositorios~~ ✅ Fase 2 COMPLETADA
 3. [x] ~~Crear services faltantes~~ ✅ Fase 3 COMPLETADA
-4. [x] ~~Crear los 14 routers~~ ✅ Fase 4 COMPLETADA (pendiente: registrar en `main.py`)
+4. [x] ~~Crear y registrar los 14 routers~~ ✅ Fase 4 COMPLETADA
 5. [ ] **AHORA:** Implementar autenticación JWT (Fase 5)
 6. [ ] Exception handlers (Fase 6)
 7. [ ] Paginación genérica (Fase 7)
 8. [ ] Alembic + seed (Fase 8)
 9. [ ] Tests (Fase 9)
-10. [ ] GraphQL (opcional)
-11. [ ] Docker
+10. [ ] GraphQL (Fase 10, opcional)
+11. [ ] Docker (Fase 11)
+12. [ ] Migración a async/await (Fase 12)
