@@ -24,13 +24,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Configuración: Le dice a Pydantic que lea automáticamente el archivo .env
+    # BASE_DIR / ".env" asegura que siempre encuentre el archivo sin importar
+    # desde qué directorio se ejecute la app.
+    # FIX: model_config duplicado eliminado. Se usa BASE_DIR para ruta absoluta.
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
-    # Configuración: Le dice a Pydantic que lea automáticamente el archivo .env
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore") 
 
     @property
     def DATABASE_URL(self) -> str:
