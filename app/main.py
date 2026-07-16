@@ -17,11 +17,13 @@ from app.api.routers.rol_router import router as rol_router
 from app.api.routers.servicio_router import router as servicio_router
 from app.api.routers.ticket_router import router as ticket_router
 from app.api.routers.tipo_ticket_router import router as tipo_ticket_router
+from app.api.routers.auth_router import router as auth_router
 
 app = FastAPI(title="project_final")
 fastapi_app = app
 
 # ── Registrar routers ────────────────────────────────────────────────
+app.include_router(auth_router)
 app.include_router(canal_router)
 app.include_router(cliente_router)
 app.include_router(cliente_servicio_router)
