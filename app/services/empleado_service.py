@@ -12,11 +12,11 @@ class EmpleadoService:
     ) -> EmpleadoResponseDTO:
 
         empleado_db = Empleado(
-            nombre_empleado= empleado_in.nombre_empleado,
-            email= empleado_in.email,
-            password_bash= empleado_in.password_bash,
-            activo= empleado_in.activo,
-            id_rol= empleado_in.id_rol,
+            nombre_empleado=empleado_in.nombre_empleado,
+            email=empleado_in.email,
+            password_bash=empleado_in.password_bash,
+            activo=empleado_in.activo,
+            id_rol=empleado_in.id_rol,
         )
 
         empleado_creado = empleado_repository.create_empleado(db, empleado_db)
