@@ -43,7 +43,7 @@ def get_all_empleados(
     db: Session = Depends(get_db)
 ) -> list[EmpleadoResponseDTO]:
     """Obtiene la lista completa de empleados registrados en el sistema."""
-    return empleado_services.get_all_empleados(db)
+    return empleado_services.get_list_empleados(db)
 
 @router.get(
     "/{id_empleado}",

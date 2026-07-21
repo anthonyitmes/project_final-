@@ -34,7 +34,7 @@ def get_all_roles(
     db: Session = Depends(get_db)
 ) -> list[RolResponseDTO]:
     """Obtiene la lista completa de roles registrados."""
-    return rol_services.get_all_roles(db)
+    return rol_services.get_list_roles(db)
 
 @router.get(
     "/{id_rol}",

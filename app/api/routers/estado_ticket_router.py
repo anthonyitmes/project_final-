@@ -36,7 +36,7 @@ def get_all_estados_ticket(
     db: Session = Depends(get_db)
 ) -> list[EstadoTicketResponseDTO]:
     """Obtiene la lista completa de estados de ticket registrados."""
-    return estado_ticket_services.get_all_estados_ticket(db)
+    return estado_ticket_services.get_list_estado_tickets(db)
 
 # FIX: reponse_model -> response_model, id_canal -> id_estado_ticket
 @router.get(

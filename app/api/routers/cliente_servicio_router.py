@@ -43,7 +43,7 @@ def get_all_cliente_servicios(
     db: Session = Depends(get_db)
 ) -> list[ClienteServicioResponseDTO]:
     """Obtiene la lista completa de cliente_servicios registrados en el sistema."""
-    return cliente_servicio_services.get_all_cliente_servicios(db)
+    return cliente_servicio_services.get_list_clientes_servicios(db)
 
 @router.get(
     "/{id_cliente_servicio}",
