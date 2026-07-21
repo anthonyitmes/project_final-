@@ -26,8 +26,6 @@ class Ticket(Base):
     id_impacto: Mapped[int] = mapped_column(ForeignKey("niveles_impacto.id_impacto"), nullable=False)
     id_plantilla: Mapped[int] = mapped_column(ForeignKey("plantilla_formulario.id_plantilla"), nullable=False)
 
-    titulo: Mapped[str] = mapped_column(String(150), nullable=False)
-    descripcion: Mapped[str] = mapped_column(String, nullable=False)
     datos_respuesta: Mapped[dict] = mapped_column(JSONB, nullable=False)
     fecha_creacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     fecha_resolucion: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

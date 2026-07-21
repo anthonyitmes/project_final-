@@ -13,7 +13,7 @@ class Rol(Base):
     # Nombre del rol
     nombre_rol: Mapped[str] = mapped_column(String(100), nullable=False)
     # Descripción opcional del rol
-    descripcion_rol: Mapped[str] = mapped_column(String(255), nullable=True)
+    descripcion: Mapped[str] = mapped_column(String(255), nullable=False)
     # Relación 1:N con Empleado. Un rol puede tener varios empleados.
     empleados: Mapped[list["Empleado"]] = relationship("Empleado", back_populates="rol")
 

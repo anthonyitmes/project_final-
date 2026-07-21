@@ -67,12 +67,15 @@ class MunicipioService:
             return None
 
         # Actualizar los campos del objeto municipio_db con los datos del DTO de entrada
-        for field, value in municipio_in.model_dump(exclude_unset=True).items():
-            setattr(municipio_db, field, value)
+        datos = municipio_in.model_dump(exclude_unset=True)
+        if not datos:
+            return MunicipioResponseDTO.model_validate(municipio_db)
 
-        updated_municipio = municipio_repository.update_municipio(db, id_municipio, municipio_db)
+        municipio_actualizado = municipio_repository.update_municipio(db, id_municipio, datos)
+        if municipio_actualizado is None:
+            return None
 
-        return MunicipioResponseDTO.model_validate(updated_municipio)
+        return MunicipioResponseDTO.model_validate(municipio_actualizado)
     
     def delete_municipio(
             self,
@@ -80,12 +83,6 @@ class MunicipioService:
         id_municipio: int,
     ) -> bool:
 
-        municipio_db = municipio_repository.get_municipio_by_id(db, id_municipio)
-
-        if municipio_db is None:
-            return False
-
-        municipio_repository.delete_municipio(db, municipio_db)
-        return True
+        return municipio_repository.delete_municipio(db, id_municipio)
     
 municipio_service = MunicipioService()

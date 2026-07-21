@@ -46,25 +46,24 @@ class RolService:
             rol_in: RolUpdateDTO,
     ) -> RolResponseDTO | None:
 
-        rol_db = rol_repository.get_rol_by_id(db, id_rol)
+        datos = rol_in.model_dump(exclude_unset=True)
+        if not datos:
+            rol = rol_repository.get_rol_by_id(db, id_rol)
+            if rol is None:
+                return None
+            return RolResponseDTO.model_validate(rol)
 
-        if rol_db is None:
+        rol_actualizado = rol_repository.update_rol(db, id_rol, datos)
+        if rol_actualizado is None:
             return None
 
-        # Actualizar los campos del objeto rol_db con los datos del DTO de entrada
-        for field, value in rol_in.model_dump(exclude_unset=True).items():
-            setattr(rol_db, field, value)
+        return RolResponseDTO.model_validate(rol_actualizado)
 
     def delete_rol(
             self,
             db: Session,
             id_rol: int,
     ) -> bool:
-
-        rol = rol_repository.get_rol_by_id(db, id_rol)
-
-        if rol is None:
-            return False
 
         return rol_repository.delete_rol(db, id_rol)
     

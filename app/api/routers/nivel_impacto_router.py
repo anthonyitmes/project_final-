@@ -35,7 +35,7 @@ def get_all_niveles_impacto(
     db: Session = Depends(get_db),
 ) -> list[NivelImpactoResponseDTO]:
     """Obtiene la lista completa de niveles de impacto registrados."""
-    return nivel_impacto_service.get_all_niveles_impacto(db)
+    return nivel_impacto_service.get_list_niveles_impacto(db)
 
 @router.get(
     "/{id_nivel_impacto}",

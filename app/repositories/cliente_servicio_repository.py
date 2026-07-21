@@ -29,7 +29,7 @@ class ClienteServicioRepository:
 		# Lista las relaciones de un servicio.
 		return db.query(ClienteServicio).filter(ClienteServicio.id_servicio == id_servicio).all()
 
-	def get_list_cliente_servicios(self, db: Session) -> list[ClienteServicio]:
+	def get_list_clientes_servicios(self, db: Session) -> list[ClienteServicio]:
 		# Lista todas las relaciones cliente-servicio.
 		return db.query(ClienteServicio).all()
 	

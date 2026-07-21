@@ -51,17 +51,16 @@ class ClienteServicioService:
             cliente_servicio_in: ClienteServicioUpdateDTO,
     ) -> ClienteServicioResponseDTO | None:
 
-        cliente_servicio_db = cliente_servicio_repository.get_cliente_servicio_by_id(db, id_cliente_servicio)
+        datos = cliente_servicio_in.model_dump(exclude_unset=True)
+        if not datos:
+            cliente_servicio = cliente_servicio_repository.get_cliente_servicio_by_id(db, id_cliente_servicio)
+            if cliente_servicio is None:
+                return None
+            return ClienteServicioResponseDTO.model_validate(cliente_servicio)
 
-        if cliente_servicio_db is None:
+        cliente_servicio_actualizado = cliente_servicio_repository.update_cliente_servicio(db, id_cliente_servicio, datos)
+        if cliente_servicio_actualizado is None:
             return None
-
-        # Actualizar los campos del objeto cliente_servicio_db con los datos del DTO de entrada
-        for field, value in cliente_servicio_in.model_dump(exclude_unset=True).items():
-            setattr(cliente_servicio_db, field, value)
-
-        # Guardar los cambios en la base de datos
-        cliente_servicio_actualizado = cliente_servicio_repository.update_cliente_servicio(db, cliente_servicio_db)
 
         return ClienteServicioResponseDTO.model_validate(cliente_servicio_actualizado)
     
@@ -71,13 +70,6 @@ class ClienteServicioService:
             id_cliente_servicio: int,
     ) -> bool:
 
-        cliente_servicio_db = cliente_servicio_repository.get_cliente_servicio_by_id(db, id_cliente_servicio)
-
-        if cliente_servicio_db is None:
-            return False
-
-        cliente_servicio_repository.delete_cliente_servicio(db, cliente_servicio_db)
-
-        return True 
+        return cliente_servicio_repository.delete_cliente_servicio(db, id_cliente_servicio)
 
 cliente_servicio_service = ClienteServicioService()

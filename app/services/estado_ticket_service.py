@@ -12,7 +12,7 @@ class EstadoTicketService:
     ) -> EstadoTicketResponseDTO:
 
         estado_ticket_db = EstadoTicket(
-            nombre_estado_ticket= estado_ticket_in.nombre_estado_ticket
+            nombre_estado= estado_ticket_in.nombre_estado
         )
 
         estado_ticket_creado = estado_ticket_repository.create_estado_ticket(db, estado_ticket_db)
@@ -35,7 +35,7 @@ class EstadoTicketService:
             db: Session,
     ) -> list[EstadoTicketResponseDTO]:
 
-        estado_tickets = estado_ticket_repository.get_list_estado_tickets(db)
+        estado_tickets = estado_ticket_repository.get_list_estados_ticket(db)
 
         return [EstadoTicketResponseDTO.model_validate(estado_ticket) for estado_ticket in estado_tickets]
     
@@ -46,16 +46,16 @@ class EstadoTicketService:
             estado_ticket_in: EstadoTicketUpdateDTO,
     ) -> EstadoTicketResponseDTO | None:
 
-        estado_ticket_db = estado_ticket_repository.get_estado_ticket_by_id(db, id_estado_ticket)
+        datos = estado_ticket_in.model_dump(exclude_unset=True)
+        if not datos:
+            estado_ticket = estado_ticket_repository.get_estado_ticket_by_id(db, id_estado_ticket)
+            if estado_ticket is None:
+                return None
+            return EstadoTicketResponseDTO.model_validate(estado_ticket)
 
-        if estado_ticket_db is None:
+        estado_ticket_actualizado = estado_ticket_repository.update_estado_ticket(db, id_estado_ticket, datos)
+        if estado_ticket_actualizado is None:
             return None
-
-        # Actualizar los campos del objeto estado_ticket_db con los datos del DTO de entrada
-        for field, value in estado_ticket_in.model_dump(exclude_unset=True).items():
-            setattr(estado_ticket_db, field, value)
-
-        estado_ticket_actualizado = estado_ticket_repository.update_estado_ticket(db, estado_ticket_db)
 
         return EstadoTicketResponseDTO.model_validate(estado_ticket_actualizado)
     
@@ -70,8 +70,6 @@ class EstadoTicketService:
         if estado_ticket_db is None:
             return False
 
-        estado_ticket_repository.delete_estado_ticket(db, estado_ticket_db)
-
-        return True
+        return estado_ticket_repository.delete_estado_ticket(db, id_estado_ticket)
 
 estado_ticket_service = EstadoTicketService()

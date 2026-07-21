@@ -42,7 +42,7 @@ def get_all_municipios(
     db: Session = Depends(get_db)
 ) -> list[MunicipioResponseDTO]:
     """Obtiene la lista completa de municipios registrados en el sistema."""
-    return municipio_services.get_all_municipios(db)
+    return municipio_services.get_list_municipios(db)
 
 # FIX: @router.get y paréntesis en líneas separadas -> misma línea
 @router.get(
