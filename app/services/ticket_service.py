@@ -28,8 +28,6 @@ class TicketService:
             id_tipo_ticket=ticket_in.id_tipo_ticket,
             id_impacto=ticket_in.id_impacto,
             id_plantilla=ticket_in.id_plantilla,
-            titulo=ticket_in.titulo,
-            descripcion=ticket_in.descripcion,
             datos_respuesta=ticket_in.respuestas_extra or {},
         )
 

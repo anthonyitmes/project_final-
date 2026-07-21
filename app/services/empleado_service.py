@@ -12,7 +12,11 @@ class EmpleadoService:
     ) -> EmpleadoResponseDTO:
 
         empleado_db = Empleado(
-            nombre_empleado= empleado_in.nombre_empleado
+            nombre_empleado= empleado_in.nombre_empleado,
+            email= empleado_in.email,
+            password_bash= empleado_in.password_bash,
+            activo= empleado_in.activo,
+            id_rol= empleado_in.id_rol,
         )
 
         empleado_creado = empleado_repository.create_empleado(db, empleado_db)
@@ -47,32 +51,25 @@ class EmpleadoService:
             empleado_in: EmpleadoUpdateDTO,
     ) -> EmpleadoResponseDTO | None:
 
-        empleado_db = empleado_repository.get_empleado_by_id(db, id_empleado)
+        datos = empleado_in.model_dump(exclude_unset=True)
+        if not datos:
+            empleado = empleado_repository.get_empleado_by_id(db, id_empleado)
+            if empleado is None:
+                return None
+            return EmpleadoResponseDTO.model_validate(empleado)
 
-        if empleado_db is None:
+        empleado_actualizado = empleado_repository.update_empleado(db, id_empleado, datos)
+        if empleado_actualizado is None:
             return None
 
-        # Actualizar los campos del objeto empleado_db con los datos del DTO de entrada
-        for field, value in empleado_in.model_dump(exclude_unset=True).items():
-            setattr(empleado_db, field, value)
+        return EmpleadoResponseDTO.model_validate(empleado_actualizado)
 
-        # Guardar los cambios en la base de datos
-        db.commit()
-        db.refresh(empleado_db)
-
-        return EmpleadoResponseDTO.model_validate(empleado_db)
     def delete_empleado(
             self,
             db: Session,
             id_empleado: int,
     ) -> bool:
 
-        empleado_db = empleado_repository.get_empleado_by_id(db, id_empleado)
-
-        if empleado_db is None:
-            return False
-
-        empleado_repository.delete_empleado(db, empleado_db)
-        return True
+        return empleado_repository.delete_empleado(db, id_empleado)
     
 empleado_service = EmpleadoService()
