@@ -11,7 +11,8 @@ class RolService:
     ) -> RolResponseDTO:
 
         rol_db = Rol(
-            nombre_rol= rol_in.nombre_rol
+            nombre_rol=rol_in.nombre_rol,
+            descripcion=rol_in.descripcion,
         )
 
         rol_creado = rol_repository.create_rol(db, rol_db)
