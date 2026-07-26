@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.schemas.cliente_dto import ClienteCreateDTO, ClienteResponseDTO, ClienteUpdateDTO
+from app.schemas.common import PaginatedResponse
 from app.services.cliente_service import cliente_service
 
 # cliente_service ya es una instancia singleton, no se instancia de nuevo
@@ -26,15 +27,17 @@ def create_cliente(
 
 @router.get(
     "",
-    response_model=list[ClienteResponseDTO],
-    summary="Listar todos los clientes",
-    description="Obtiene la lista completa de clientes registrados.",
+    response_model=PaginatedResponse[ClienteResponseDTO],
+    summary="Listar todos los clientes (paginado)",
+    description="Obtiene la lista de clientes con paginación. Usa ?page=1&size=20.",
 )
 def get_all_clientes(
+    page: int = 1,
+    size: int = 20,
     db: Session = Depends(get_db),
-) -> list[ClienteResponseDTO]:
-    """Obtiene la lista completa de clientes registrados."""
-    return cliente_services.get_list_clientes(db)
+) -> PaginatedResponse[ClienteResponseDTO]:
+    """Obtiene clientes paginados. page: página (1-based), size: registros por página."""
+    return cliente_services.get_list_clientes_paginated(db, page=page, size=size)
 
 @router.get(
     "/{id_cliente}",

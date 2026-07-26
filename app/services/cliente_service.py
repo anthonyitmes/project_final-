@@ -1,8 +1,11 @@
+import math
+
 from sqlalchemy.orm import Session
 
 from app.models.clientes import Cliente
 from app.repositories.cliente_repository import cliente_repository
 from app.schemas.cliente_dto import ClienteCreateDTO, ClienteResponseDTO, ClienteUpdateDTO
+from app.schemas.common import PaginatedResponse
 
 class ClienteService:
     
@@ -53,6 +56,26 @@ class ClienteService:
         clientes = cliente_repository.get_list_clientes(db)
 
         return [ClienteResponseDTO.model_validate(cliente) for cliente in clientes]
+
+    # ── Paginación ───────────────────────────────────────────────────
+    def get_list_clientes_paginated(
+            self,
+            db: Session,
+            page: int = 1,
+            size: int = 20,
+    ) -> PaginatedResponse[ClienteResponseDTO]:
+        # offset: cuántos registros saltar, limit: cuántos traer
+        offset = (page - 1) * size
+        total = cliente_repository.count_clientes(db)
+        items_db = cliente_repository.get_list_clientes_paginated(db, offset, size)
+        items = [ClienteResponseDTO.model_validate(c) for c in items_db]
+        return PaginatedResponse(
+            items=items,
+            total=total,
+            page=page,
+            size=size,
+            pages=math.ceil(total / size) if total > 0 else 0,
+        )
 
     def update_cliente(
             self,

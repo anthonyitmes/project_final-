@@ -21,8 +21,17 @@ class ClienteRepository:
         return db.query(Cliente).filter(Cliente.email == email).first()
 
     def get_list_clientes(self, db: Session) -> list[Cliente]:
-        # Lista todos los clientes.
+        # Lista todos los clientes (sin paginar).
         return db.query(Cliente).all()
+
+    # ── Paginación ───────────────────────────────────────────────────
+    def get_list_clientes_paginated(self, db: Session, offset: int, limit: int) -> list[Cliente]:
+        # Devuelve solo los registros de una página.
+        return db.query(Cliente).offset(offset).limit(limit).all()
+
+    def count_clientes(self, db: Session) -> int:
+        # Cuenta el total de clientes para calcular páginas.
+        return db.query(Cliente).count()
 
     def update_cliente(self, db: Session, id_cliente: int, datos: dict) -> Cliente | None:
         """Actualiza campos de un cliente. Recibe dict {campo: valor}.
