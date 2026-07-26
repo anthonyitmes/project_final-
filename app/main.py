@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 
 # ── Importar routers ─────────────────────────────────────────────────
 # Cada archivo exporta "router", lo renombramos con "as x_router"
@@ -21,6 +23,21 @@ from app.api.routers.auth_router import router as auth_router
 
 app = FastAPI(title="project_final")
 fastapi_app = app
+
+## ── Manejo global de errores de SQLAlchemy ─────────────────────────────
+@app.exception_handler(IntegrityError)
+async def integrity_error_handler(request: Request, exc: IntegrityError):
+    return JSONResponse(
+        status_code = 400,
+        content = {"detail": "Violación de integridad: El recurso ya existe o hay datos en conflicto"}
+    )
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code = 500,
+        content = {"detail": "Error interno del servidor"}
+    )
 
 # ── Registrar routers ────────────────────────────────────────────────
 app.include_router(auth_router)
