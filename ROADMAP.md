@@ -1,6 +1,6 @@
 # 🗺️ Roadmap para completar el Backend — `project_final`
 
-> Última actualización: 15/jul/2026 — Fase 4 completada y verificada, Fase 5 (Auth JWT) siguiente
+> Última actualización: 27/jul/2026 — Fases 5, 6, 7 y 8 completadas y documentadas
 
 ---
 
@@ -34,7 +34,7 @@ EL ROUTER SOLO RECIBE HTTP Y LLAMA AL SERVICE — nunca toca BD directamente
 
 ---
 
-## 📋 Resumen de estado actual (15/jul/2026)
+## 📋 Resumen de estado actual (27/jul/2026)
 
 | Capa | Estado |
 |---|---|
@@ -45,10 +45,10 @@ EL ROUTER SOLO RECIBE HTTP Y LLAMA AL SERVICE — nunca toca BD directamente
 | Routers (FastAPI) | ✅ 14/14 construidos y registrados en `main.py` — 72 endpoints funcionando |
 | `main.py` | ✅ Los 14 routers registrados con `app.include_router()` |
 | Base de datos | ✅ Tablas creadas en `user_db` vía SQLAlchemy `create_all()` |
-| Auth (JWT) | ❌ Sin implementar — `auth_dto.py` se usará en Fase 5 directamente en el router |
+| Auth (JWT) | ✅ Implementado — `auth_router.py`, `security.py`, `dependencies.py` completos |
 | Async (async/await) | ❌ Toda la app es síncrona actualmente — migrar a async en Fase 12 |
 | `.env` | ✅ Configurado y funcional |
-| Exception handlers | ❌ Sin implementar |
+| Exception handlers | ✅ Implementados en `main.py` — `IntegrityError` y `Exception` handlers |
 | GraphQL | ❌ Carpeta vacía |
 | Tests | ❌ Sin tests |
 
@@ -166,46 +166,61 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 
 ---
 
-## 🔐 Fase 5 — Autenticación JWT
+## 🔐 Fase 5 — Autenticación JWT ✅ COMPLETADO (verificado 27/jul/2026)
 
 > **Nota:** El DTO `auth_dto.py` ya existe con `LoginRequestDTO` y `TokenResponseDTO`.
 > Se usará directamente en el router de auth, sin service intermedio.
 
 ### 5.1 Crear utilidades de seguridad
-- [ ] `app/core/security.py`:
+- [x] `app/core/security.py` (106 líneas):
   - `hash_password(password: str) -> str` (bcrypt / passlib)
   - `verify_password(plain: str, hashed: str) -> bool`
   - `create_access_token(data: dict) -> str` (python-jose)
   - `decode_access_token(token: str) -> dict`
 
 ### 5.2 Crear dependencia de auth
-- [ ] `app/api/dependencies.py`:
+- [x] `app/api/dependencies.py` (84 líneas):
   - `get_current_user(token: str = Depends(oauth2_scheme)) -> Empleado`
 
 ### 5.3 Crear router de autenticación
-- [ ] `app/api/routers/auth_router.py`:
+- [x] `app/api/routers/auth_router.py` (85 líneas):
   - `POST /auth/login` → recibe `LoginRequestDTO`, devuelve `TokenResponseDTO`
   - `GET /auth/me` → devuelve info del usuario autenticado
 
----
-
-## 🛡️ Fase 6 — Manejo de errores global
-
-- [ ] Handler para `IntegrityError` → 409 Conflict
-- [ ] Handler genérico `Exception` → 500
+### 5.4 Documentación
+- [x] `docs/fases-5-6-7-auth-exceptions-paginacion.md`
 
 ---
 
-## 📄 Fase 7 — Paginación genérica
+## 🛡️ Fase 6 — Manejo de errores global ✅ COMPLETADO (verificado 27/jul/2026)
 
-- [ ] `app/schemas/common.py` → `PaginatedResponse[T]`
+- [x] Handler para `IntegrityError` → 400 (en `main.py`)
+- [x] Handler genérico `Exception` → 500 (en `main.py`)
+- [x] Documentación: `docs/fases-5-6-7-auth-exceptions-paginacion.md`
+
+> ⚠️ El handler de `IntegrityError` devuelve 400 en vez del 409 sugerido en el plan original.
+> 409 Conflict es semánticamente más correcto, pero 400 es funcional.
 
 ---
 
-## 🗃️ Fase 8 — Alembic + seed
+## 📄 Fase 7 — Paginación genérica ✅ COMPLETADO (verificado 27/jul/2026)
 
-- [ ] Instalar `alembic`, inicializar, generar migración
-- [ ] `app/db/seed.py` — datos iniciales
+- [x] `app/schemas/common.py` (35 líneas) → `PaginatedResponse[T]`
+- [x] Documentación: `docs/fases-5-6-7-auth-exceptions-paginacion.md`
+
+> ⚠️ El schema existe pero ningún router lo usa aún. Los endpoints de listado devuelven `list[T]` directamente.
+> Queda pendiente aplicar `PaginatedResponse` a los endpoints en una fase futura.
+
+---
+
+## 🗃️ Fase 8 — Alembic + seed ✅ COMPLETADO (27/jul/2026)
+
+- [x] Instalar `alembic` (`alembic==1.18.5` en `requirements.txt`)
+- [x] `alembic.ini` y `alembic/env.py` configurados (importa 14 modelos, lee `.env`)
+- [x] Migración inicial generada: `55a1c50e11be_initial_migration.py`
+- [x] Migración aplicada a la BD (`alembic upgrade head`)
+- [x] `app/db/seed.py` ejecutado — 25 registros insertados (idempotente)
+- [x] Documentación: `docs/fase-8-alembic-seed.md`
 
 ---
 
@@ -259,10 +274,10 @@ Migración de `vars(entidad)` → `dict` + agregado `delete` en TODOS los reposi
 2. [x] ~~Corregir repositorios~~ ✅ Fase 2 COMPLETADA
 3. [x] ~~Crear services faltantes~~ ✅ Fase 3 COMPLETADA
 4. [x] ~~Crear y registrar los 14 routers~~ ✅ Fase 4 COMPLETADA
-5. [ ] **AHORA:** Implementar autenticación JWT (Fase 5)
-6. [ ] Exception handlers (Fase 6)
-7. [ ] Paginación genérica (Fase 7)
-8. [ ] Alembic + seed (Fase 8)
+5. [x] Implementar autenticación JWT (Fase 5) ✅
+6. [x] Exception handlers (Fase 6) ✅
+7. [x] Paginación genérica (Fase 7) ✅
+8. [x] Alembic + seed (Fase 8) ✅
 9. [ ] Tests (Fase 9)
 10. [ ] GraphQL (Fase 10, opcional)
 11. [ ] Docker (Fase 11)
